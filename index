@@ -1,1 +1,559 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเรียนรู้กระบอกนิวเมติกส์ (Pneumatic Cylinder)</title>
+    
+    <!-- นำเข้าไลบรารีสำหรับแสดงไฟล์ 3D .glb ของ Google -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --bg-color: #f4f6f7;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background-color: var(--primary-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            position: relative;
+        }
+
+        nav ul li a {
+            display: block;
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        nav ul li a:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Dropdown Menuสำหรับ หน้า 3 */
+        nav ul li ul {
+            display: none;
+            position: absolute;
+            background-color: var(--primary-color);
+            min-width: 200px;
+            flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        nav ul li:hover ul {
+            display: flex;
+        }
+
+        nav ul li ul li a {
+            padding: 12px 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* ส่วนแสดงผล 3D */
+        .viewer-container {
+            text-align: center;
+            margin: 30px 0;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 400px;
+            margin: auto;
+            background-color: #f0f3f4;
+            border-radius: 4px;
+        }
+
+        /* Member Grid (หน้า 4) */
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .member-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .member-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid var(--secondary-color);
+        }
+
+        /* Admin Section & Buttons */
+        .admin-controls {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            margin-top: 5px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.btn-success {
+            background-color: var(--success-color);
+        }
+        button.btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        button.btn-danger {
+            background-color: var(--accent-color);
+        }
+
+        button.btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .reference-list {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .reference-list li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- แถบเมนูนำทาง (Navigation) -->
+    <nav>
+        <ul>
+            <li><a onclick="switchPage('home')">หน้าแรก</a></li>
+            <li><a onclick="switchPage('intro')">บทนำ</a></li>
+            <li id="design-menu">
+                <a onclick="switchPage('design')">พาสดีไซน์ ▾</a>
+                <ul id="dropdown-items">
+                    <!-- หัวข้อย่อยจะถูกโหลดจาก JavaScript -->
+                </ul>
+            </li>
+            <li><a onclick="switchPage('members')">สมาชิกกลุ่ม</a></li>
+            <li><a onclick="switchPage('references')">แหล่งอ้างอิง</a></li>
+        </ul>
+    </nav>
+
+    <!-- เนื้อหาแต่ละหน้า -->
+    <div class="container">
+        
+        <!-- หน้าที่ 1: หน้าแรก -->
+        <div id="home" class="page active">
+            <h1>ยินดีต้อนรับสู่เว็บบทเรียน กระบอกนิวเมติกส์</h1>
+            <p>เว็บเพจนี้ให้ความรู้เกี่ยวกับโครงสร้าง การทำงาน และการออกแบบพาสชิ้นส่วนต่างๆ ของกระบอกสูบนิวเมติกส์ (Pneumatic Cylinder)</p>
+            <p>ใช้เมนูด้านบนเพื่อเลือกศึกษาหัวข้อที่ต้องการได้ทันที</p>
+        </div>
+
+        <!-- หน้าที่ 2: บทนำ (มีระบบ 3D และเพลง) -->
+        <div id="intro" class="page">
+            <h1>บทนำ (Introduction)</h1>
+            <div id="intro-content">
+                <!-- ข้อความบทนำดึงจากฐานข้อมูลเบราว์เซอร์ -->
+            </div>
+
+            <!-- ส่วนควบคุมโมเดล 3D และเสียงเพลง -->
+            <div class="viewer-container">
+                <h3>📦 โมเดล 3D กระบอกนิวเมติกส์สัมผัสได้</h3>
+                <p style="font-size: 0.9rem; color: #666;">(คลิกลากเพื่อหมุนเอดิตมุมมอง หรือใช้ลูกกลิ้งเมาส์เพื่อซูมเข้า-ออก)</p>
+                
+                <!-- แท็กดึงไฟล์ 3D: แก้ไขชื่อไฟล์ของคุณที่ src="cylinder.glb" -->
+                <model-viewer id="pneumatic-model" 
+                    src="cylinder.glb" 
+                    alt="Pneumatic Cylinder 3D Model" 
+                    camera-controls 
+                    touch-action="pan-y">
+                </model-viewer>
+
+                <div style="margin-top: 15px;">
+                    <!-- ปุ่มเปิดปิดระบบหมุนออโต้และเสียงเพลง -->
+                    <button id="rotation-btn" class="btn-success" onclick="toggleRotationAndMusic()" style="font-size: 1.1rem; padding: 12px 25px;">
+                        🔄 เริ่มหมุนอัตโนมัติ & เปิดเพลง
+                    </button>
+                </div>
+            </div>
+
+            <!-- แท็กเครื่องเล่นเสียง: แก้ไขชื่อไฟล์เพลงของคุณที่ src="music.mp3" -->
+            <audio id="bg-music" src="music.mp3" loop></audio>
+        </div>
+
+        <!-- หน้าที่ 3: พาสดีไซน์ -->
+        <div id="design" class="page">
+            <h1 id="design-title">พาสดีไซน์ (Part Design)</h1>
+            <div id="design-content">
+                <p style="color: #7f8c8d;">กรุณาเลือกหัวข้อย่อยจากเมนูดรอปดาวน์ "พาสดีไซน์" ด้านบนเพื่อดูรายละเอียดชิ้นส่วน</p>
+            </div>
+        </div>
+
+        <!-- หน้าที่ 4: สมาชิกกลุ่ม -->
+        <div id="members" class="page">
+            <h1>สมาชิกกลุ่ม (Group Members)</h1>
+            <div class="member-grid" id="member-container">
+                <!-- ข้อมูลสมาชิก 4 คนดึงจาก JavaScript -->
+            </div>
+        </div>
+
+        <!-- หน้าที่ 5: แหล่งอ้างอิง -->
+        <div id="references" class="page">
+            <h1>แหล่งอ้างอิง (References)</h1>
+            <ol class="reference-list" id="reference-container">
+                <!-- ข้อมูลอ้างอิงดึงจาก JavaScript -->
+            </ol>
+        </div>
+
+        <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
+
+        <!-- ระบบจัดการหลังบ้าน (Admin System) -->
+        <div class="admin-controls">
+            <h3>🛠️ ระบบจัดการข้อมูล (เพิ่ม/ลดเนื้อหา)</h3>
+            <div id="login-area">
+                <input type="password" id="admin-pass" placeholder="กรอกรหัสผ่านเพื่อแก้ไขข้อมูล (รหัสผ่านคือ: 1234)" style="max-width: 320px;">
+                <button onclick="checkAdminAuth()">เข้าสู่ระบบแก้ไข</button>
+            </div>
+            
+            <div id="control-panel" style="display: none;">
+                <p style="color: green; font-weight: bold; margin-bottom: 10px;">🔓 ปลดล็อคระบบจัดการเรียบร้อยแล้ว</p>
+                <select id="edit-mode" onchange="toggleAdminForm()">
+                    <option value="">-- เลือกหน้าที่ต้องการ เพิ่ม/ลด/แก้ไข --</option>
+                    <option value="edit-intro">แก้ไขข้อความหน้า "บทนำ"</option>
+                    <option value="edit-design">จัดการหัวข้อดรอปดาวน์ "พาสดีไซน์" (เพิ่มได้ไม่จำกัด)</option>
+                    <option value="edit-references">จัดการเพิ่ม/ลด "แหล่งอ้างอิง"</option>
+                </select>
+
+                <!-- ฟอร์มแก้ไขบทนำ -->
+                <div id="form-intro" style="display:none; margin-top:15px;">
+                    <label><b>แก้ไขข้อความหน้าบทนำ:</b></label>
+                    <textarea id="input-intro-text" rows="5"></textarea>
+                    <button onclick="saveIntro()">บันทึกข้อความบทนำ</button>
+                </div>
+
+                <!-- ฟอร์มแก้พาสดีไซน์ -->
+                <div id="form-design" style="display:none; margin-top:15px;">
+                    <h4>➕ เพิ่มหัวข้อย่อยใหม่ในพาสดีไซน์</h4>
+                    <input type="text" id="input-design-title" placeholder="ชื่อหัวข้อชิ้นส่วนใหม่ (เช่น Cylinder Barrel)">
+                    <textarea id="input-design-body" rows="4" placeholder="รายละเอียดของชิ้นส่วนนี้..."></textarea>
+                    <button onclick="addDesignPart()">บันทึกและเพิ่มลงดรอปดาวน์</button>
+                    <br><br>
+                    <div id="design-delete-list" style="margin-top:10px;"></div>
+                </div>
+
+                <!-- ฟอร์มแก้แหล่งอ้างอิง -->
+                <div id="form-references" style="display:none; margin-top:15px;">
+                    <h4>➕ เพิ่มแหล่งอ้างอิงใหม่</h4>
+                    <input type="text" id="input-ref-text" placeholder="พิมพ์ชื่อหนังสือ ลิงก์เว็บไซต์ หรือเอกสารวิชาการ">
+                    <button onclick="addReference()">เพิ่มแหล่งอ้างอิง</button>
+                    <br><br>
+                    <div id="ref-delete-list" style="margin-top:10px;"></div>
+                </div>
+                
+                <button onclick="logoutAdmin()" class="btn-danger" style="margin-top: 20px;">ออกจากระบบจัดการ</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // กำหนดรหัสผ่านสำหรับเปิดระบบหลังบ้าน
+        const ADMIN_PASSWORD = "1234"; 
+        let isAdmin = false;
+
+        // ข้อมูลเริ่มต้นของเว็บไซต์ (จะเซฟลงฐานข้อมูลบราวเซอร์อัตโนมัติเมื่อมีการเพิ่ม/ลด)
+        let webData = {
+            intro: "กระบอกนิวเมติกส์ (Pneumatic Cylinder) เป็นอุปกรณ์ขับเคลื่อนที่นิยมใช้อย่างแพร่หลายในงานวิศวกรรมและระบบอัตโนมัติในโรงงาน โดยอาศัยหลักการเปลี่ยนพลังงานจากแรงดันลมให้กลายเป็นการเคลื่อนที่ในแนวเส้นตรง เพื่อนำไปขับเคลื่อนกลไกต่างๆ ชิ้นส่วนประกอบสำคัญต่างๆ ต้องได้รับการออกแบบทางวิศวกรรมอย่างแม่นยำเพื่อให้ทนต่อแรงดันและรอบการทำงานที่สูง",
+            designParts: {
+                "Cylinder Barrel": "ตัวกระบอกสูบหลัก ทำหน้าที่รองรับแรงดันลมและเป็นทางวิ่งให้ลูกสูบเคลื่อนที่ภายใน มักทำจากท่ออะลูมิเนียมคอมโพสิตหรือสแตนเลสขัดผิวเรียบ",
+                "Piston & Seals": "ลูกสูบที่อยู่ภายใน มีหน้าที่รับแรงดันลมโดยตรง พร้อมซีลป้องกันลมรั่วไหลระหว่างห้องแรงดันสองฝั่ง",
+                "Piston Rod": "แกนก้านสูบทำจากเหล็กชุบโครเมียมแข็ง (Hard Chrome) ยื่นออกมาภายนอกกระบอกเพื่อส่งกำลังเชิงกลไปยังชิ้นงาน",
+                "End Caps": "ฝาปิดส่วนหัวและส่วนท้ายของกระบอกสูบ มีช่องพอร์ตสำหรับจ่ายลมเข้าและระบายลมออก"
+            },
+            members: [
+                { name: "นักศึกษาคนที่ 1", id: "66xxxxxx-1", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" },
+                { name: "นักศึกษาคนที่ 2", id: "66xxxxxx-2", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
+                { name: "นักศึกษาคนที่ 3", id: "66xxxxxx-3", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
+                { name: "นักศึกษาคนที่ 4", id: "66xxxxxx-4", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" }
+            ],
+            references: [
+                "คู่มือระบบนิวเมติกส์และไฮดรอลิกส์เบื้องต้น, คณะวิศวกรรมศาสตร์",
+                "SMC Pneumatics Industrial Product Technical Data Catalog",
+                "ISO 15552 Standard for Pneumatic Fluid Power Cylinders"
+            ]
+        };
+
+        // ตรวจสอบและดึงข้อมูลที่เคยบันทึกไว้ในคอมพิวเตอร์เครื่องนี้มาแสดงผล
+        if (localStorage.getItem('pneumaticWebData')) {
+            webData = JSON.parse(localStorage.getItem('pneumaticWebData'));
+        }
+
+        // ฟังก์ชันเซฟข้อมูลลง LocalStorage เมื่อแอดมินทำการอัปเดต
+        function saveToStorage() {
+            localStorage.setItem('pneumaticWebData', JSON.stringify(webData));
+            renderWebsite();
+        }
+
+        // ฟังก์ชันสลับการแสดงผลของหน้าเว็บแต่ละหน้า
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // ฟังก์ชันเมื่อกดเลือกดูเนื้อหาย่อยในพาสดีไซน์
+        function viewDesignPart(partName) {
+            switchPage('design');
+            document.getElementById('design-title').innerText = "พาสดีไซน์ - " + partName;
+            document.getElementById('design-content').innerHTML = `<p>${webData.designParts[partName]}</p>`;
+        }
+
+        // ฟังก์ชันควบคุมการหมุนโมเดล 3D และการเล่นเพลงวนลูปพร้อมๆ กัน
+        function toggleRotationAndMusic() {
+            const model = document.getElementById('pneumatic-model');
+            const music = document.getElementById('bg-music');
+            const btn = document.getElementById('rotation-btn');
+
+            if (model.hasAttribute('auto-rotate')) {
+                // หากกำลังหมุนอยู่ -> สั่งให้หยุดหมุน และหยุดเพลง
+                model.removeAttribute('auto-rotate');
+                music.pause();
+                btn.innerHTML = "🔄 เริ่มหมุนอัตโนมัติ & เปิดเพลง";
+                btn.className = "btn-success";
+            } else {
+                // หากหยุดอยู่ -> สั่งหมุน และเริ่มเล่นเสียงเพลง
+                model.setAttribute('auto-rotate', '');
+                music.play().catch(err => {
+                    console.log("การเล่นเพลงอัตโนมัติถูกเบราว์เซอร์จำกัดสิทธิ์ชั่วคราว:", err);
+                });
+                btn.innerHTML = "⏸️ หยุดหมุน & หยุดเพลง";
+                btn.className = "btn-danger";
+            }
+        }
+
+        // ฟังก์ชันเรนเดอร์และจัดตารางข้อมูลขึ้นหน้าจอ
+        function renderWebsite() {
+            // 1. หน้าบทนำ
+            document.getElementById('intro-content').innerHTML = `<p>${webData.intro}</p>`;
+
+            // 2. สร้างเมนูดรอปดาวน์พาสดีไซน์ด้านบน
+            const dropdown = document.getElementById('dropdown-items');
+            dropdown.innerHTML = '';
+            for (let part in webData.designParts) {
+                dropdown.innerHTML += `<li><a onclick="viewDesignPart('${part}')">${part}</a></li>`;
+            }
+
+            // 3. หน้าสมาชิกกลุ่ม (4 คน)
+            const memberContainer = document.getElementById('member-container');
+            memberContainer.innerHTML = '';
+            webData.members.forEach(m => {
+                memberContainer.innerHTML += `
+                    <div class="member-card">
+                        <img src="${m.img}" alt="${m.name}">
+                        <h3>${m.name}</h3>
+                        <p style="color: #7f8c8d; font-weight: bold; font-size:0.95rem;">ID: ${m.id}</p>
+                    </div>
+                `;
+            });
+
+            // 4. หน้าอ้างอิง
+            const refContainer = document.getElementById('reference-container');
+            refContainer.innerHTML = '';
+            webData.references.forEach(r => {
+                refContainer.innerHTML += `<li>${r}</li>`;
+            });
+
+            // อัปเดตรายชื่อสิ่งที่จะลบในตารางแอดมินหลังบ้าน
+            renderAdminLists();
+        }
+
+        // ระบบตรวจสอบรหัสผ่าน
+        function checkAdminAuth() {
+            const passInput = document.getElementById('admin-pass').value;
+            if (passInput === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('login-area').style.display = 'none';
+                document.getElementById('control-panel').style.display = 'block';
+                document.getElementById('input-intro-text').value = webData.intro;
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง! ลองอีกครั้งนะครับ');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.getElementById('admin-pass').value = '';
+            document.getElementById('login-area').style.display = 'block';
+            document.getElementById('control-panel').style.display = 'none';
+        }
+
+        // ฟังก์ชันสลับเมนูแก้ไขในระบบแอดมิน
+        function toggleAdminForm() {
+            const mode = document.getElementById('edit-mode').value;
+            document.getElementById('form-intro').style.display = mode === 'edit-intro' ? 'block' : 'none';
+            document.getElementById('form-design').style.display = mode === 'edit-design' ? 'block' : 'none';
+            document.getElementById('form-references').style.display = mode === 'edit-references' ? 'block' : 'none';
+        }
+
+        // ฟังก์ชันเซฟบทนำ
+        function saveIntro() {
+            webData.intro = document.getElementById('input-intro-text').value;
+            saveToStorage();
+            alert('อัปเดตบทนำเรียบร้อย!');
+        }
+
+        // ฟังก์ชันเพิ่มหัวข้อดีไซน์ย่อยใหม่
+        function addDesignPart() {
+            const title = document.getElementById('input-design-title').value.trim();
+            const body = document.getElementById('input-design-body').value.trim();
+            if(!title || !body) return alert('กรุณากรอกทั้งหัวข้อชิ้นส่วนและคำอธิบายชิ้นส่วนด้วยครับ');
+            
+            webData.designParts[title] = body;
+            document.getElementById('input-design-title').value = '';
+            document.getElementById('input-design-body').value = '';
+            saveToStorage();
+            alert('เพิ่มชิ้นส่วนใหม่ลงในปุ่มดรอปดาวน์เรียบร้อย!');
+        }
+
+        // ฟังก์ชันลบหัวข้อดีไซน์ย่อยออก
+        function deleteDesignPart(key) {
+            if(confirm(`คุณแน่ใจใช่ไหมว่าต้องการลบชิ้นส่วน "${key}" ออกจากระบบ?`)) {
+                delete webData.designParts[key];
+                saveToStorage();
+            }
+        }
+
+        // ฟังก์ชันเพิ่มแหล่งอ้างอิง
+        function addReference() {
+            const refText = document.getElementById('input-ref-text').value.trim();
+            if(!refText) return alert('กรุณากรอกข้อมูลแหล่งอ้างอิงก่อนกดเพิ่มครับ');
+            webData.references.push(refText);
+            document.getElementById('input-ref-text').value = '';
+            saveToStorage();
+        }
+
+        // ฟังก์ชันลบแหล่งอ้างอิง
+        function deleteReference(index) {
+            if(confirm('ต้องการลบรายการอ้างอิงนี้ใช่หรือไม่?')) {
+                webData.references.splice(index, 1);
+                saveToStorage();
+            }
+        }
+
+        // ฟังก์ชันเรนเดอร์รายชื่อรายการที่จะกดลบในแถบควบคุมหลังบ้าน
+        function renderAdminLists() {
+            // รายการปุ่มลบพาสดีไซน์
+            const designDelDiv = document.getElementById('design-delete-list');
+            designDelDiv.innerHTML = '<strong>❌ ส่วนลบข้อมูลพาสดีไซน์ที่มีอยู่:</strong><br>';
+            for(let key in webData.designParts) {
+                designDelDiv.innerHTML += `<button class="btn-danger" style="margin-bottom:5px;" onclick="deleteDesignPart('${key}')">ลบหัวข้อ ${key}</button> `;
+            }
+
+            // รายการปุ่มลบแหล่งอ้างอิง
+            const refDelDiv = document.getElementById('ref-delete-list');
+            refDelDiv.innerHTML = '<strong>❌ ส่วนลบข้อมูลแหล่งอ้างอิงที่มีอยู่:</strong><br>';
+            webData.references.forEach((r, idx) => {
+                refDelDiv.innerHTML += `<div style="margin-bottom:8px;"><button class="btn-danger" style="padding:4px 8px;" onclick="deleteReference(${idx})">ลบ</button> <span style="font-size:0.9rem;">${r}</span></div>`;
+            });
+        }
+
+        // สั่งรันระบบเว็บเพจครั้งแรกตอนเปิดไฟล์
+        renderWebsite();
+    </script>
+</body>
+</html>
 
