@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Calculator Suite</title>
-    <!-- โหลด Library สำหรับคำนวณขั้นสูงและวาดกราฟ -->
+    <title>Python Calculator Suite with Fraction Support</title>
+    <!-- โหลด Library สำหรับคำนวณเศษส่วนและวาดกราฟ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -20,45 +20,60 @@
             min-height: 100vh;
             box-sizing: border-box;
         }
-        .hub-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .hub-header h1 {
-            color: #4B8BBE;
-            margin: 0 0 5px 0;
-        }
+        .hub-header { text-align: center; margin-bottom: 15px; }
+        .hub-header h1 { color: #4B8BBE; margin: 0 0 5px 0; }
         .hub-header h1 span { color: #FFD43B; }
         
-        /* แถบสลับเวอร์ชันเครื่องคิดเลข */
-        .version-switcher {
+        /* ส่วนควบคุมโหมดเครื่องคิดเลข */
+        .controls-panel {
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 25px;
             background-color: #2d2d2d;
-            padding: 8px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #444;
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
         }
+        .version-switcher { display: flex; gap: 10px; }
         .tab-btn {
-            background-color: #3d3d3d;
-            color: #aaa;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.2s;
+            background-color: #3d3d3d; color: #aaa; border: none; padding: 10px 15px;
+            font-size: 13px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.2s;
         }
         .tab-btn:hover { background-color: #4f4f4f; color: #fff; }
-        .tab-btn.active {
-            background-color: #4B8BBE;
-            color: white;
-            box-shadow: 0 2px 8px rgba(75,139,190,0.4);
-        }
+        .tab-btn.active { background-color: #4B8BBE; color: white; }
 
-        /* กล่องหลักควบคุมตัวเครื่อง */
+        /* สวิตช์เปิด/ปิดโหมดเศษส่วน */
+        .fraction-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #1a1a1a;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #555;
+        }
+        .switch {
+            position: relative; display: inline-block; width: 44px; height: 22px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .3s; border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #FFD43B; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .toggle-label { font-size: 13px; font-weight: bold; color: #FFD43B; }
+
+        /* ตัวเครื่องคิดเลข */
         .calculator-card {
             background-color: #2b2b2b;
             padding: 25px;
@@ -69,80 +84,41 @@
             box-sizing: border-box;
         }
         .screen-container { position: relative; margin-bottom: 15px; }
-        .mode-indicator {
-            position: absolute;
-            top: 5px;
-            left: 10px;
-            font-size: 10px;
-            color: #888;
-            text-transform: uppercase;
-        }
+        .mode-indicator { position: absolute; top: 5px; left: 10px; font-size: 10px; color: #888; }
         .calc-screen {
-            width: 100%;
-            height: 60px;
-            background-color: #111;
-            border: 1px solid #4B8BBE;
-            border-radius: 6px;
-            color: #39FF14;
-            font-size: 24px;
-            text-align: right;
-            padding: 15px 10px 5px 10px;
-            box-sizing: border-box;
+            width: 100%; height: 60px; background-color: #111; border: 1px solid #4B8BBE;
+            border-radius: 6px; color: #39FF14; font-size: 24px; text-align: right;
+            padding: 15px 10px 5px 10px; box-sizing: border-box;
         }
         
-        /* การจัดหน้า Layout ของปุ่มแต่ละโหมด */
         .button-grid { display: grid; gap: 8px; }
         .grid-std { grid-template-columns: repeat(4, 1fr); }
         .grid-sci { grid-template-columns: repeat(5, 1fr); }
         
-        /* สไตล์ปุ่มกด */
         button {
-            padding: 12px 5px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            background-color: #3a3a3a;
-            color: white;
-            font-family: inherit;
-            transition: 0.1s;
+            padding: 12px 5px; font-size: 16px; cursor: pointer; border: none;
+            border-radius: 4px; background-color: #3a3a3a; color: white; font-family: inherit;
         }
         button:hover { background-color: #505050; }
-        button.operator { background-color: #4B8BBE; color: white; }
-        button.operator:hover { background-color: #5f9ece; }
+        button.operator { background-color: #4B8BBE; }
         button.sci-fn { background-color: #243447; color: #8da2fb; font-size: 14px; }
-        button.sci-fn:hover { background-color: #30455e; }
         button.equal { background-color: #FFD43B; color: #111; font-weight: bold; }
         button.equal:hover { background-color: #ffe169; }
-        button.clear { background-color: #d32f2f; color: white; }
-        button.clear:hover { background-color: #f44336; }
+        button.clear { background-color: #d32f2f; }
 
-        /* โหมดกราฟิก */
         .graph-interface { display: none; }
         .graph-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
         #graph-input {
-            flex: 1;
-            padding: 10px;
-            background-color: #111;
-            border: 1px solid #4B8BBE;
-            border-radius: 4px;
-            color: #39FF14;
-            font-size: 16px;
+            flex: 1; padding: 10px; background-color: #111; border: 1px solid #4B8BBE;
+            border-radius: 4px; color: #39FF14; font-size: 16px;
         }
         .graph-window { background-color: white; border-radius: 6px; padding: 8px; margin-bottom: 15px; }
 
-        /* หน้าจอแสดงผลโค้ด Python IDE */
+        /* หน้าจอแสดงโค้ด Python */
         .python-ide {
-            margin-top: 20px;
-            background-color: #121212;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: #a9b7c6;
-            border-left: 4px solid #FFD43B;
-            overflow-x: auto;
-            white-space: pre-line;
-            line-height: 1.5;
+            margin-top: 20px; background-color: #121212; padding: 15px; border-radius: 6px;
+            font-size: 12px; color: #a9b7c6; border-left: 4px solid #FFD43B;
+            overflow-x: auto; white-space: pre-line; line-height: 1.5;
         }
         .keyword { color: #cc7832; }
         .comment { color: #629755; font-style: italic; }
@@ -152,15 +128,25 @@
 <body>
 
 <div class="hub-header">
-    <h1>🐍 Python <span>CalcSuite</span></h1>
-    <p style="color: #888; margin: 5px 0 0 0;">คลิกเลือกเวอร์ชันเครื่องคิดเลขที่คุณต้องการใช้งาน</p>
+    <h1>🐍 Python <span>CalcSuite v2</span></h1>
 </div>
 
-<!-- ส่วนเลือกเวอร์ชัน -->
-<div class="version-switcher">
-    <button class="tab-btn active" onclick="switchVersion('standard', this)">Standard</button>
-    <button class="tab-btn" onclick="switchVersion('scientific', this)">Scientific</button>
-    <button class="tab-btn" onclick="switchVersion('graphing', this)">Graphing</button>
+<!-- แผงควบคุมด้านบน -->
+<div class="controls-panel">
+    <div class="version-switcher">
+        <button class="tab-btn active" onclick="switchVersion('standard', this)">Standard</button>
+        <button class="tab-btn" onclick="switchVersion('scientific', this)">Scientific</button>
+        <button class="tab-btn" onclick="switchVersion('graphing', this)">Graphing</button>
+    </div>
+    
+    <!-- สวิตช์เปิดปิดโหมดเศษส่วน -->
+    <div class="fraction-toggle-container" id="fraction-box">
+        <span class="toggle-label">Fraction Output Mode (หารเศษส่วน)</span>
+        <label class="switch">
+            <input type="checkbox" id="fraction-mode-toggle" onchange="toggleFractionMode()">
+            <span class="slider"></span>
+        </label>
+    </div>
 </div>
 
 <!-- ตัวเครื่องคิดเลข -->
@@ -170,7 +156,7 @@
         <input type="text" id="screen" readonly value="0">
     </div>
 
-    <!-- โหมด 1: เครื่องคิดเลขมาตรฐาน -->
+    <!-- โหมด 1: มาตรฐาน -->
     <div id="calc-standard" class="button-grid grid-std calc-interface">
         <button class="clear" onclick="pressClear()">C</button>
         <button class="operator" onclick="pressOp('**')">xʸ</button>
@@ -187,55 +173,42 @@
         <button class="equal" onclick="executeCalculation()">=</button>
     </div>
 
-    <!-- โหมด 2: เครื่องคิดเลขวิทยาศาสตร์ -->
+    <!-- โหมด 2: วิทยาศาสตร์ -->
     <div id="calc-scientific" class="button-grid grid-sci calc-interface" style="display: none;">
         <button class="sci-fn" onclick="pressNum('sin(')">sin</button>
         <button class="sci-fn" onclick="pressNum('cos(')">cos</button>
         <button class="sci-fn" onclick="pressNum('tan(')">tan</button>
         <button class="sci-fn" onclick="pressNum('pi')">π</button>
         <button class="clear" onclick="pressClear()">C</button>
-        
         <button class="sci-fn" onclick="pressNum('log10(')">log</button>
         <button class="sci-fn" onclick="pressNum('log(')">ln</button>
         <button class="sci-fn" onclick="pressNum('sqrt(')">√</button>
         <button class="sci-fn" onclick="pressNum('e')">e</button>
         <button class="operator" onclick="pressOp('/')">/</button>
-        
         <button class="sci-fn" onclick="pressOp('^')">xʸ</button>
         <button onclick="pressNum('7')">7</button><button onclick="pressNum('8')">8</button><button onclick="pressNum('9')">9</button>
         <button class="operator" onclick="pressOp('*')">*</button>
-        
         <button class="sci-fn" onclick="pressNum('(')">(</button>
         <button onclick="pressNum('4')">4</button><button onclick="pressNum('5')">5</button><button onclick="pressNum('6')">6</button>
         <button class="operator" onclick="pressOp('-')">-</button>
-        
         <button class="sci-fn" onclick="pressNum(')')">)</button>
         <button onclick="pressNum('1')">1</button><button onclick="pressNum('2')">2</button><button onclick="pressNum('3')">3</button>
         <button class="operator" onclick="pressOp('+')">+</button>
-        
         <button onclick="pressNum('0')" style="grid-column: span 2;">0</button>
         <button onclick="pressNum('.')">.</button>
         <button class="equal" onclick="executeCalculation()" style="grid-column: span 2;">=</button>
     </div>
 
-    <!-- โหมด 3: เครื่องคิดเลขกราฟิก -->
+    <!-- โหมด 3: กราฟิก -->
     <div id="calc-graphing" class="graph-interface">
         <div class="graph-input-row">
-            <input type="text" id="graph-input" value="x^2" placeholder="สมการ เช่น sin(x)">
+            <input type="text" id="graph-input" value="x^2" placeholder="เช่น sin(x)">
             <button class="equal" onclick="plotGraphData()">Plot</button>
         </div>
-        <div class="shortcuts" style="display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap;">
-            <button style="font-size:11px; padding:4px 8px;" onclick="setGraphText('sin(x)')">sin(x)</button>
-            <button style="font-size:11px; padding:4px 8px;" onclick="setGraphText('cos(x)')">cos(x)</button>
-            <button style="font-size:11px; padding:4px 8px;" onclick="setGraphText('x^3')">x^3</button>
-            <button style="background-color:#555; font-size:11px; padding:4px 8px;" onclick="setGraphText('')">Clear</button>
-        </div>
-        <div class="graph-window">
-            <canvas id="hubGraphCanvas"></canvas>
-        </div>
+        <div class="graph-window"><canvas id="hubGraphCanvas"></canvas></div>
     </div>
 
-    <!-- กล่องคอนโซลผลลัพธ์ Python -->
+    <!-- กล่องคอนโซล Python IDE -->
     <div class="python-ide" id="ide-terminal"></div>
 </div>
 
@@ -243,25 +216,31 @@
     let currentMode = 'standard';
     let inputString = "0";
     let chartObj = null;
+    let isFractionMode = false;
 
-    // รันครั้งแรกเมื่อเปิดหน้าเว็บ
-    window.onload = function() {
-        resetIDE();
-    };
+    window.onload = function() { resetIDE(); };
+
+    function toggleFractionMode() {
+        isFractionMode = document.getElementById('fraction-mode-toggle').checked;
+        if (inputString !== "0" && currentMode !== 'graphing') {
+            executeCalculation(); // คำนวณใหม่ทันทีเพื่อเปลี่ยนฟอร์แมตการแสดงผล
+        } else {
+            resetIDE();
+        }
+    }
 
     function switchVersion(mode, btnElement) {
         currentMode = mode;
         inputString = "0";
         document.getElementById("screen").value = "0";
         
-        // สลับปุ่ม Active ไฮไลต์สีบลู
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
 
-        // ซ่อน-แสดงส่วนควบคุมให้ตรงตามโหมด
         document.querySelectorAll('.calc-interface').forEach(el => el.style.display = 'none');
         document.getElementById('calc-graphing').style.display = 'none';
         document.getElementById('screen-block').style.display = 'block';
+        document.getElementById('fraction-box').style.display = 'flex';
 
         if(mode === 'standard') {
             document.getElementById('calc-standard').style.display = 'grid';
@@ -273,7 +252,8 @@
             resetIDE();
         } else if(mode === 'graphing') {
             document.getElementById('calc-graphing').style.display = 'block';
-            document.getElementById('screen-block').style.display = 'none'; // ซ่อนจอหลักในโหมดกราฟ
+            document.getElementById('screen-block').style.display = 'none';
+            document.getElementById('fraction-box').style.display = 'none'; // ปิดระบบเศษส่วนในโหมดกราฟ
             plotGraphData();
         }
     }
@@ -300,119 +280,111 @@
         resetIDE();
     }
 
-    function setGraphText(txt) {
-        document.getElementById('graph-input').value = txt;
-        if(txt !== "") plotGraphData();
-    }
-
     function resetIDE() {
-        let commentText = currentMode === 'standard' ? 'Standard Calculator' : 'Scientific Module Loaded';
-        let importStatement = currentMode === 'scientific' ? '<span class="keyword">import</span> math\n' : '';
-        document.getElementById("ide-terminal").innerHTML = `
-            <span class="comment"># Python ${commentText}</span>\n${importStatement}
-            <span class="comment"># Ready to compute...</span>
-        `.trim();
+        let importStatement = "";
+        if (isFractionMode) {
+            importStatement = '<span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction\n';
+        } else if (currentMode === 'scientific') {
+            importStatement = '<span class="keyword">import</span> math\n';
+        }
+        document.getElementById("ide-terminal").innerHTML = `${importStatement}<span class="comment"># Ready to compute...</span>`;
     }
 
     function updateLivePreview(expr) {
-        let pySyntax = transpileToPython(expr);
-        let header = currentMode === 'scientific' ? '<span class="keyword">import</span> math\n\n' : '';
-        document.getElementById("ide-terminal").innerHTML = `${header}<span class="comment"># Live Input Expression</span>\nexpr = <span class="builtin">"${pySyntax}"</span>`;
+        let header = "";
+        if (isFractionMode) {
+            header = '<span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction\n\n';
+        } else if (currentMode === 'scientific') {
+            header = '<span class="keyword">import</span> math\n\n';
+        }
+        document.getElementById("ide-terminal").innerHTML = `${header}<span class="comment"># Live Input Expression</span>\nexpr = "${expr}"`;
+    }
+
+    // ฟังก์ชันแปลงเลขหารธรรมดาให้เป็นโครงสร้าง Fraction ใน Python เช่น 1/3 -> Fraction(1, 3)
+    function convertToPythonFraction(expr) {
+        return expr.replace(/(\d+)\s*\/\s*(\d+)/g, "Fraction($1, $2)");
     }
 
     function transpileToPython(expr) {
         let res = expr;
         if(currentMode === 'scientific') {
-            res = res.replace(/sin\(/g, "math.sin(");
-            res = res.replace(/cos\(/g, "math.cos(");
-            res = res.replace(/tan\(/g, "math.tan(");
-            res = res.replace(/log10\(/g, "math.log10(");
-            res = res.replace(/log\(/g, "math.log(");
-            res = res.replace(/sqrt\(/g, "math.sqrt(");
-            res = res.replace(/pi/g, "math.pi");
-            res = res.replace(/e/g, "math.e");
+            res = res.replace(/sin\(/g, "math.sin(").replace(/cos\(/g, "math.cos(").replace(/tan\(/g, "math.tan(");
+            res = res.replace(/log10\(/g, "math.log10(").replace(/log\(/g, "math.log(").replace(/sqrt\(/g, "math.sqrt(");
+            res = res.replace(/pi/g, "math.pi").replace(/e/g, "math.e");
         }
         res = res.replace(/\^/g, "**"); 
+        if (isFractionMode) {
+            res = convertToPythonFraction(res);
+        }
         return res;
     }
 
     function executeCalculation() {
         try {
-            let finalExpr = inputString.replace(/sqrt\(/g, "sqrt("); // ปรับแต่งเผื่อ math.js แมตช์
-            let result = math.evaluate(finalExpr);
+            let finalResult;
+            let displayOutput;
             
-            if (typeof result === 'number' && !Number.isInteger(result)) {
-                result = Math.round(result * 1000000) / 1000000;
+            if (isFractionMode) {
+                // ใช้ math.js คำนวณในโหมดเศษส่วนแม่นยำสูง
+                let calculated = math.fraction(math.evaluate(inputString));
+                finalResult = calculated;
+                // ฟอร์แมตผลลัพธ์เศษส่วนให้สวยงาม (เช่น 3/4)
+                displayOutput = calculated.d === 1 ? `${calculated.s * calculated.n}` : `${calculated.s * calculated.n}/${calculated.d}`;
+            } else {
+                let calculated = math.evaluate(inputString);
+                if (typeof calculated === 'number' && !Number.isInteger(calculated)) {
+                    calculated = Math.round(calculated * 1000000) / 1000000;
+                }
+                finalResult = calculated;
+                displayOutput = calculated.toString();
             }
-            document.getElementById("screen").value = result;
 
+            document.getElementById("screen").value = displayOutput;
+
+            // อัปเดตกล่อง Python IDE
             let pyFormula = transpileToPython(inputString);
-            let importLine = currentMode === 'scientific' ? '<span class="keyword">import</span> math\n' : '';
+            let importLine = isFractionMode ? '<span class="keyword">from</span> fractions <span class="keyword">import</span> Fraction\n' : (currentMode === 'scientific' ? '<span class="keyword">import</span> math\n' : '');
             
             document.getElementById("ide-terminal").innerHTML = `
-                ${importLine}<span class="comment"># Executed Script</span>
+                ${importLine}<span class="comment"># Executed Python Script</span>
                 result = ${pyFormula}
                 <span class="builtin">print</span>(result)
-                <span class="comment"># >>> Output: ${result}</span>
+                <span class="comment"># >>> Output: ${displayOutput}</span>
             `.trim();
-            inputString = result.toString();
+            
         } catch(e) {
             document.getElementById("screen").value = "Syntax Error";
             document.getElementById("ide-terminal").innerHTML = `<span class="keyword">raise</span> <span class="builtin">SyntaxError</span>(<span class="builtin">"สมการคณิตศาสตร์ไม่สมบูรณ์"</span>)`;
-            inputString = "0";
         }
     }
 
-    // ฟังก์ชันวาดกราฟของโหมดเครื่องคิดเลขวิทยาศาสตร์มีกราฟ
     function plotGraphData() {
         const formula = document.getElementById('graph-input').value;
-        const xCoords = [];
-        const yCoords = [];
-
+        const xCoords = []; const yCoords = [];
         for (let x = -10; x <= 10; x += 0.5) {
             try {
                 let y = math.evaluate(formula, { x: x });
-                if (typeof y === 'number' && isFinite(y)) {
-                    xCoords.push(x);
-                    yCoords.push(y);
-                }
-            } catch(e) {
-                document.getElementById("ide-terminal").innerHTML = `<span class="comment"># Graph Error</span>\n<span class="keyword">print</span>(<span class="builtin">"สมการสำหรับพล็อตไม่ถูกต้อง"</span>)`;
-                return;
-            }
+                if (typeof y === 'number' && isFinite(y)) { xCoords.push(x); yCoords.push(y); }
+            } catch(e) { return; }
         }
-
-        // อัปเดตโครงวาด Chart.js
         const ctx = document.getElementById('hubGraphCanvas').getContext('2d');
         if(chartObj) chartObj.destroy();
-
         chartObj = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: xCoords,
-                datasets: [{
-                    label: `f(x) = ${formula}`,
-                    data: yCoords,
-                    borderColor: '#FFD43B',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: false
-                }]
+                datasets: [{ label: `f(x) = ${formula}`, data: yCoords, borderColor: '#FFD43B', borderWidth: 2, pointRadius: 0, fill: false }]
             },
             options: { responsive: true }
         });
-
-        // อัปเดตสคริปต์ไอเดีย Python Matplotlib ด้านล่าง
         let pyEquation = formula.replace(/sin/g, "np.sin").replace(/cos/g, "np.cos").replace(/tan/g, "np.tan").replace(/\^/g, "**");
         document.getElementById("ide-terminal").innerHTML = `
             <span class="comment"># Python Data-Viz Script</span>
             <span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
             <span class="keyword">import</span> numpy <span class="keyword">as</span> np
-
             x = np.linspace(-10, 10, 100)
             y = ${pyEquation}
-
-            plt.plot(x, y, color=<span class="builtin">'#FFD43B'</span>)
+            plt.plot(x, y, color='#FFD43B')
             plt.grid(<span class="keyword">True</span>)
             plt.show()
         `.trim();
