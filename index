@@ -3,779 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pneumatic Cylinder Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    <link rel="icon" href="/po-laew.jpg" type="image/jpeg">
+    <title>Python Data Science Graphing Calculator</title>
+    <!-- ดึงคลังแสงภายนอกมาช่วยคำนวณและวาดกราฟ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Modern Premium Soft Variables */
-        :root {
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-light: #f1f5f9;
-            --border-color: #e2e8f0;
-            --nav-bg: rgba(255, 255, 255, 0.85);
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --transition: all 0.25s ease;
-        }
-
-        [data-theme="dark"] {
-            --bg-body: #0b1329;
-            --bg-card: #111a36;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #3b82f6;
-            --primary-hover: #60a5fa;
-            --primary-light: rgba(59, 130, 246, 0.08);
-            --border-color: #1e293b;
-            --nav-bg: rgba(11, 19, 41, 0.85);
-            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.15);
-            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.7; transition: var(--transition); -webkit-font-smoothing: antialiased; }
-
-        html { scroll-behavior: smooth; }
-
-        /* Navigation Bar */
-        header { position: fixed; top: 0; width: 100%; z-index: 1000; background: var(--nav-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-color); transition: var(--transition); }
-        nav { max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; height: 72px; }
-        
-        .logo { color: var(--text-main); font-weight: 700; font-size: 1.25rem; text-decoration: none; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 10px; letter-spacing: -0.3px; }
-        .logo:hover { opacity: 0.9; }
-        
-        .nav-menu { display: flex; gap: 2rem; list-style: none; align-items: center; }
-        .nav-menu > li > a { color: var(--text-muted); text-decoration: none; font-weight: 500; padding: 0.5rem 0; font-size: 0.95rem; position: relative; transition: var(--transition); cursor: pointer; }
-        .nav-menu > li > a:hover, .nav-menu > li > a.active { color: var(--primary); }
-        .nav-menu > li > a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: var(--primary); transition: var(--transition); border-radius: 2px; }
-        .nav-menu > li > a.active::after { width: 100%; }
-
-        .nav-right-zone { display: flex; align-items: center; gap: 0.75rem; }
-        .lang-btn, .theme-btn {
-            background: var(--primary-light); color: var(--text-main); border: 1px solid var(--border-color);
-            padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 0.85rem;
-            transition: var(--transition); font-family: 'Sarabun', sans-serif; display: inline-flex; align-items: center; justify-content: center;
-        }
-        .lang-btn:hover, .theme-btn:hover { background: var(--text-main); color: var(--bg-card); border-color: var(--text-main); }
-        .theme-btn { font-size: 1rem; padding: 6px 10px; }
-
-        /* Hamburger Menu */
-        .hamburger { display: none; flex-direction: column; cursor: pointer; padding: 6px; z-index: 1001; }
-        .hamburger span { width: 22px; height: 2px; background: var(--text-main); margin: 3px 0; transition: var(--transition); border-radius: 1px; }
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-
-        /* Dropdown Menu */
-        .dropdown { position: relative; }
-        .dropdown-content { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--bg-card); min-width: 230px; border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; z-index: 10; border: 1px solid var(--border-color); }
-        .dropdown-content a { display: block; padding: 10px 16px; color: var(--text-main); font-size: 0.9rem; border-bottom: 1px solid var(--border-color); transition: var(--transition); cursor: pointer; text-decoration: none; }
-        .dropdown-content a:last-child { border-bottom: none; }
-        .dropdown-content a:hover { background: var(--primary-light); color: var(--primary); padding-left: 20px; }
-        .dropdown.open .dropdown-content { display: block; }
-        .dropdown-arrow { font-size: 0.7rem; margin-left: 2px; display: inline-block; opacity: 0.7; }
-
-        /* Content Layout */
-        main { margin-top: 100px; max-width: 1140px; margin-left: auto; margin-right: auto; padding: 1.5rem; min-height: calc(100vh - 240px); }
-        .page-section { background: var(--bg-card); padding: 2.5rem; border-radius: var(--radius-md); margin-bottom: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); animation: fadeIn 0.35s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .hidden { display: none !important; }
-        
-        h1 { color: var(--text-main); font-size: 1.75rem; margin-bottom: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
-        h2 { color: var(--primary); margin: 1.75rem 0 1rem; font-size: 1.25rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        p { margin-bottom: 1rem; text-align: justify; color: var(--text-muted); font-size: 0.95rem; }
-        ul { margin-left: 1.5rem; margin-bottom: 1.5rem; }
-        li { margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.95rem; }
-        li strong { color: var(--text-main); font-weight: 600; }
-
-        /* Modernized Elegant Table */
-        .data-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; text-align: left; }
-        .data-table th { background: var(--primary-light); color: var(--text-main); padding: 12px 16px; font-weight: 600; border-bottom: 2px solid var(--border-color); }
-        .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); background: var(--bg-card); }
-        .data-table tr:hover td { background: var(--primary-light); color: var(--text-main); }
-
-        /* Members Clean Grid */
-        .members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-        .member-card { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 2rem 1rem; border-radius: var(--radius-md); text-align: center; transition: var(--transition); }
-        .member-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
-        .member-photo-container { width: 90px; height: 90px; margin: 0 auto 1rem; border-radius: 50%; overflow: hidden; background: var(--primary-light); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; }
-        .member-photo { width: 100%; height: 100%; object-fit: cover; }
-        .member-card h3 { font-size: 1.05rem; margin-bottom: 0.25rem; color: var(--text-main); font-weight: 600; }
-        .member-card p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
-
-        .ref-item { background: var(--primary-light); padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.9rem; color: var(--text-muted); }
-        .ref-item a { color: var(--primary); text-decoration: none; }
-        .ref-item a:hover { text-decoration: underline; }
-
-        /* Interactive 3D Canvas Minimalist Container */
-        .viewer3d-container { width: 100%; height: 440px; background: #0f172a; border-radius: var(--radius-md); margin: 1.5rem 0; overflow: hidden; position: relative; }
-        model-viewer { width: 100%; height: 100%; background: transparent; }
-        
-        .viewer-controls { display: flex; justify-content: center; gap: 0.75rem; margin-top: 1rem; }
-        .viewer-btn { padding: 8px 16px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; transition: var(--transition); font-family: 'Sarabun', sans-serif; font-weight: 500; }
-        .viewer-btn:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
-        .viewer-btn.active-btn { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-        .volume-control { display: flex; align-items: center; gap: 10px; margin-top: 1rem; justify-content: center; font-size: 0.85rem; color: var(--text-muted); }
-        .volume-control input[type="range"] { width: 120px; accent-color: var(--primary); cursor: pointer; }
-        
-        /* Video & Image Containers */
-        .video-card-container { width: 100%; max-width: 760px; margin: 1.5rem auto; background: var(--bg-card); border-radius: var(--radius-md); overflow: hidden; }
-        .video-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; }
-        .video-wrapper video { width: 100%; height: 100%; object-fit: contain; }
-
-        /* Hero Banner Section */
-        .hero-section { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); 
-            color: white; 
-            padding: 4rem 3rem; 
-            border-radius: var(--radius-lg); 
-            margin-bottom: 2rem; 
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
+            justify-content: center;
         }
-        [data-theme="dark"] .hero-section {
-            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+        .container {
+            background-color: #2b2b2b;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            width: 90%;
+            max-width: 600px;
         }
-        .hero-content { flex: 1; }
-        .hero-section h1 { color: white; font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .hero-section h2 { color: #93c5fd; font-size: 1.1rem; margin: 0; font-weight: 600; letter-spacing: 1px; }
-
-        .hero-image-container { flex: 1; display: flex; justify-content: center; }
-        .hero-display-img { max-width: 280px; height: auto; animation: floatEffect 4s ease-in-out infinite; }
-
-        @keyframes floatEffect {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+        .header {
+            color: #4B8BBE;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 20px;
         }
-
-        /* Drawings Showcase Gallery */
-        .drawing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-        .drawing-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; transition: var(--transition); display: flex; flex-direction: column; }
-        .drawing-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary); }
-        .drawing-image { width: 100%; height: 180px; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .drawing-image img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; }
-        
-        .drawing-viewer3d { width: 100%; height: 180px; background: #0f172a; border-bottom: 1px solid var(--border-color); }
-        .drawing-card h4 { text-align: center; padding: 0.75rem; color: var(--text-main); font-size: 0.95rem; font-weight: 600; background: var(--primary-light); }
-        .drawing-info { padding: 1.25rem; flex-grow: 1; }
-        .drawing-info h3 { color: var(--primary); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .drawing-info p { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 968px) {
-            .hamburger { display: flex; }
-            nav { height: 64px; }
-            .logo { font-size: 1.15rem; }
-            .nav-menu { 
-                display: none; position: absolute; top: 64px; left: 0; right: 0; 
-                background: var(--bg-card); flex-direction: column; padding: 1rem 0; gap: 0; 
-                box-shadow: var(--shadow-md); border-top: 1px solid var(--border-color);
-                max-height: calc(100vh - 64px); overflow-y: auto;
-            }
-            .nav-menu.active { display: flex; }
-            .nav-menu > li { width: 100%; }
-            .nav-menu > li > a { display: block; padding: 0.75rem 1.5rem; width: 100%; }
-            .nav-menu > li > a::after { display: none; }
-            .dropdown-content { position: static; box-shadow: none; transform: none; background: var(--primary-light); min-width: 100%; border-radius: 0; border: none; }
-            .dropdown-content a { padding: 0.75rem 2.25rem; }
-            .hero-section { flex-direction: column; text-align: center; padding: 3rem 1.5rem; }
-            .hero-section h1 { font-size: 1.75rem; }
-            .hero-display-img { max-width: 200px; }
-            .page-section { padding: 1.75rem 1.25rem; }
-            main { margin-top: 80px; padding: 1rem; }
+        .header span { color: #FFD43B; }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-
-        footer { text-align: center; padding: 2.5rem 1.5rem; background: #0f172a; color: #94a3b8; margin-top: 3rem; font-size: 0.9rem; }
-        [data-theme="dark"] footer { background: #020617; }
-        footer p { text-align: center; color: #94a3b8; margin: 0; }
+        #equation-input {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #111;
+            border: 1px solid #4B8BBE;
+            border-radius: 6px;
+            color: #39FF14;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            background-color: #4B8BBE;
+            color: white;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover { background-color: #5f9ece; }
+        button.btn-plot { background-color: #FFD43B; color: #111; }
+        button.btn-plot:hover { background-color: #ffe169; }
+        .shortcuts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .btn-shortcut {
+            background-color: #3a3a3a;
+            color: #8da2fb;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+        .graph-area {
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .python-ide {
+            background-color: #121212;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #a9b7c6;
+            border-left: 4px solid #FFD43B;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .keyword { color: #cc7832; }
+        .comment { color: #629755; font-style: italic; }
+        .builtin { color: #8888c6; }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="#" class="logo" onclick="showSection('home'); return false;"> 
-                <img src="./po-laew.jpg" alt="Logo" style="width: 28px; height: 28px; border-radius: 4px;">
-                Pneumatic Project
-            </a>
 
-            <ul class="nav-menu" id="navMenu">
-                <li><a href="#home" onclick="showSection('home'); closeMobileMenu();" id="nav-home" class="active" data-i18n="nav_home">หน้าหลัก</a></li>
-                <li><a href="#intro" onclick="showSection('intro'); closeMobileMenu();" id="nav-intro" data-i18n="nav_intro">บทนำ</a></li>
-                <li class="dropdown" id="design-dropdown">
-                    <a href="#design" onclick="toggleDropdownMenu(event); return false;" id="nav-design" data-i18n="nav_design">พาร์ทดีไซน์ <span class="dropdown-arrow">▼</span></a>
-                    <div class="dropdown-content">
-                        <a onclick="showSection('cat3d'); closeMobileMenu();" data-i18n="drop_cat3d">การแบบจำลองเชิงกล 3 มิติ</a>
-                        <a onclick="showSection('cat2d'); closeMobileMenu();" data-i18n="drop_cat2d">การเขียนแบบเครื่องกล 2 มิติ</a>
-                        <a onclick="showSection('cylinder-selection'); closeMobileMenu();" data-i18n="drop_selection">ประเภทและการเลือกใช้งาน</a>
-                        <a onclick="showSection('material-selection-principles'); closeMobileMenu();" data-i18n="drop_mat_principles">หลักการเลือกใช้วัสดุ</a>
-                        <a onclick="showSection('boom'); closeMobileMenu();" data-i18n="drop_boom">รายการวัสดุ</a>
-                    </div>
-                </li>
-                <li><a href="#members" onclick="showSection('members'); closeMobileMenu();" id="nav-members" data-i18n="nav_members">สมาชิกกลุ่ม</a></li>
-                <li><a href="#references" onclick="showSection('references'); closeMobileMenu();" id="nav-references" data-i18n="nav_ref">แหล่งอ้างอิง</a></li>
-            </ul>
-            
-            <div class="nav-right-zone">
-                <button id="theme-toggle" class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌙</button>
-                <button id="lang-toggle" class="lang-btn" onclick="toggleLang()">EN</button>
-                <div class="hamburger" onclick="toggleMobileMenu()">
-                    <span></span><span></span><span></span>
-                </div>
-            </div>
-        </nav>
-    </header>
+<div class="container">
+    <div class="header">🐍 Matplotlib_<span>GraphCalc</span></div>
+    
+    <div class="input-group">
+        <input type="text" id="equation-input" value="x^2" placeholder="ใสสมการ เช่น x^2, sin(x), 2*x + 5">
+        <button class="btn-plot" onclick="plotGraph()">Plot Graph</button>
+    </div>
 
-    <main>
-        <section id="home" class="page-section">
-            <div class="hero-section">
-                <div class="hero-content">
-                    <h1 data-i18n="hero_title">PNEUMATICS PART PROJECT</h1>
-                    <h2 data-i18n="hero_sub">ENGINEERING MATERIALS</h2>
-                </div>
-                <div class="hero-image-container">
-                    <img src="./Generated_Image.png" class="hero-display-img" alt="Pneumatic Cylinder Mockup">
-                </div>
-            </div>
-        </section>
+    <div class="shortcuts">
+        <button class="btn-shortcut" onclick="addText('sin(x)')">sin(x)</button>
+        <button class="btn-shortcut" onclick="addText('cos(x)')">cos(x)</button>
+        <button class="btn-shortcut" onclick="addText('tan(x)')">tan(x)</button>
+        <button class="btn-shortcut" onclick="addText('sqrt(x)')">sqrt(x)</button>
+        <button class="btn-shortcut" onclick="addText('x^3')">x^3</button>
+        <button class="btn-shortcut" onclick="addText('log(x)')">ln(x)</button>
+        <button style="background-color: #d32f2f;" onclick="clearInput()">Clear</button>
+    </div>
 
-        <section id="intro" class="page-section hidden">
-            <h1 data-i18n="sec_intro">1. บทนำ</h1>
-            <h2 data-i18n="intro_why_choose">เหตุผลในการเลือกใช้กระบอกสูบประเภทนี้</h2>
-            <p data-i18n="intro_why_choose_d">สำหรับโปรเจกต์นี้ กลุ่มของเราได้เลือกพิจารณากระบอกสูบนิวเมติกส์ประเภท Double Acting (ทำงานสองทาง) เนื่องจากเป็นอุปกรณ์ขับเคลื่อนหลักที่ตอบโจทย์การใช้งานในอุตสาหกรรมระบบอัตโนมัติ โดยเฉพาะอย่างยิ่งการนำไปประยุกต์ใช้ในระบบสมาร์ทฟาร์ม (Smart Farm) และการเกษตรแม่นยำสูง ที่ต้องการกลไกการเปิด-ปิดวาล์วหรือคัดแยกผลผลิตที่ทนทานต่อสภาพแวดล้อม ทำงานได้อย่างรวดเร็ว และสามารถควบคุมระยะช่วงชักได้อย่างแม่นยำ</p>
-            
-            <h2 data-i18n="media_t">ดูโมเดล 3D</h2>
-            <div class="viewer3d-container">
-                <model-viewer id="glb-viewer" src="./Assembly.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" alt="3D Model Tube" ar></model-viewer>
-            </div>
-            
-            <div class="viewer-controls">
-                <button class="viewer-btn active-btn" id="btn-rotate" onclick="toggleAutoRotate()" data-i18n="btn_rotate">🔄 หมุนอัตโนมัติ</button>
-                <button class="viewer-btn" onclick="resetCamera()" data-i18n="btn_reset">🎯 รีเซ็ตมุมมอง</button>
-            </div>
+    <!-- พื้นที่วาดกราฟ -->
+    <div class="graph-area">
+        <canvas id="graphCanvas"></canvas>
+    </div>
 
-            <div class="volume-control">
-                <label id="volume-label" data-i18n="volume_label">🔊 ระดับเสียง:</label>
-                <input type="range" id="audio-volume" min="0" max="100" value="50" oninput="updateVolume(this.value)">
-                <span id="volume-txt-label">50%</span>
-            </div>
-            <audio id="background-music" src="./FUNKY TOWN.mp3" loop></audio>
+    <!-- ส่วนที่แปลงร่างเป็น Python Matplotlib Script -->
+    <div class="python-ide" id="pyCode"></div>
+</div>
 
-            <h2 data-i18n="intro_prin_title">หลักการในการเลือกกระบอกสูบ</h2>
-            <p data-i18n="intro_prin_desc">ในการเลือกกระบอกสูบนิวเมติกส์ไปใช้งานเบื้องต้น จะต้องพิจารณาจากปัจจัยหลัก 4 ประการ ได้แก่ <strong>แรงที่ต้องการใช้งาน (Force)</strong> เพื่อคำนวณหาขนาดเส้นผ่านศูนย์กลางกระบอกสูบ, <strong>ระยะก้านชัก (Stroke)</strong> ให้สอดคล้องกับระยะการเคลื่อนที่ของเครื่องจักร, <strong>ความเร็ว (Speed)</strong> ที่ต้องการในวงจร, และ <strong>ความดันลมอัด (Operating Pressure)</strong> ในระบบ เพื่อให้กระบอกสูบทำงานได้อย่างมีประสิทธิภาพและปลอดภัย</p>
+<script>
+    let chartInstance = null;
 
-            <h2 data-i18n="intro_types">ประเภทของกระบอกสูบนิวเมติกส์</h2>
-            <ul>
-                <li><strong data-i18n="type1">Single Acting:</strong> <span data-i18n="type1_d">ใช้ลมดันออกทางเดียว และใช้สปริงช่วยในการดันลูกสูบคืนตัว</span></li>
-                <li><strong data-i18n="type2">Double Acting:</strong> <span data-i18n="type2_d">ใช้แรงดันลมในการขับเคลื่อนทั้งจังหวะออกและจังหวะเข้า (เป็นประเภทที่นิยมใช้งานมากที่สุด)</span></li>
-                <li><strong data-i18n="type3">Rodless Cylinder:</strong> <span data-i18n="type3_d">กระบอกสูบแบบไม่มีก้านสูบยื่นออกมาภายนอก ช่วยในการประหยัดพื้นที่ติดตั้ง</span></li>
-                <li><strong data-i18n="type4">Rotary Actuator:</strong> <span data-i18n="type4_d">อุปกรณ์ขับเคลื่อนที่ให้ส่งแรงออกมาในลักษณะของการเคลื่อนที่แบบหมุน</span></li>
-            </ul>
-            
-            <h2 data-i18n="intro_apps">อุตสาหกรรมที่นำไปใช้งาน</h2>
-            <p data-i18n="intro_apps_d">ถูกนำไปใช้งานอย่างแพร่หลายในสายการผลิตอัตโนมัติ เช่น อุตสาหกรรมยานยนต์, บรรจุภัณฑ์, ชิ้นส่วนอิเล็กทรอนิกส์, อุตสาหกรรมอาหาร รวมถึงระบบจับยึดชิ้นงานต่าง ๆ</p>
-        </section>
+    // เริ่มต้นหน้าเว็บให้พลอตกราฟ x^2 ไว้รอเลย
+    window.onload = function() {
+        plotGraph();
+    };
 
-        <section id="cat3d" class="page-section hidden">
-            <h1 data-i18n="sec_cat3d">การแบบจำลองเชิงกล 3 มิติ</h1>
-            
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <img src="./ลิง.jpg" alt="Mechanical Showcase" style="max-width: 100%; height: auto; border-radius: var(--radius-md); max-height: 320px; object-fit: cover;">
-            </div>
-            
-            <div class="video-card-container">
-                <div class="video-wrapper">
-                    <video src="./Pneumatic cylinder working 3D.mp4" controls preload="metadata"></video>
-                </div>
-            </div>
+    function addText(text) {
+        const input = document.getElementById('equation-input');
+        if(input.value === "x^2" && text !== 'x^2') {
+            input.value = text;
+        } else {
+            input.value += text;
+        }
+    }
 
-            <h2 style="color: var(--primary); font-size: 1.2rem; font-weight: 600; margin-top: 2rem;">CAT3D Components</h2>
-            <div class="drawing-grid">
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Front_Plate.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Front Plate</h4>
-                </div>
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Rear_Plate.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Rear Plate</h4>
-                </div>
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Tube.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Tube</h4>
-                </div>
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Slider_Shaft.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Slider Shaft</h4>
-                </div>
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Shaft.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Shaft</h4>
-                </div>
-                <div class="drawing-card">
-                    <model-viewer class="drawing-viewer3d" src="./Nut.glb" camera-controls touch-action="pan-y" auto-rotate shadow-intensity="1" environment-image="neutral" exposure="1.0" ar></model-viewer>
-                    <h4>Nut</h4>
-                </div>
-            </div>
-        </section>
+    function clearInput() {
+        document.getElementById('equation-input').value = "";
+    }
 
-        <section id="cat2d" class="page-section hidden">
-            <h1 data-i18n="sec_cat2d">2.3 การเขียนแบบเครื่องกล 2 มิติ (Engineering Drawing)</h1>
-            <p data-i18n="desc_cat2d">การดึงแบบแปลน 2 มิติ (2D Drawing) จากโมเดล 3 มิติ เพื่อแสดงรายละเอียดขนาด (Dimensions) และความคลาดเคลื่อน (Tolerances) สำหรับการผลิตจริง</p>
-            
-            <div class="drawing-grid">
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Tube.JPG" alt="Cylinder Tube Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg_tube_title">ตัวกระบอกสูบ (Cylinder Tube)</h3>
-                        <p data-i18n="dwg_tube_desc">แบบแปลนแสดงโครงสร้างทรงกระบอกกลวง ความยาวรวม 260.00 มม. ระบุขนาดเส้นผ่านศูนย์กลางผิวนอก ø52.00 มม. และผิวด้านใน (Bore) ø40.00 มม. พร้อมตำแหน่งเจาะรูนำลมเข้า-ออกขนาด ø10.00 มม. ทั้งสองฝั่ง</p>
-                    </div>
-                </div>
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Slider Shaft.JPG" alt="Piston Slider Shaft Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg_slider_title">แกนเพลาลูกสูบ (Piston Slider Shaft)</h3>
-                        <p data-i18n="dwg_slider_desc">แบบขยายโครงสร้างแกนเพลาขับเคลื่อนหลัก ความยาวรวม 269.00 มม. ขนาดฐานเพลารองรับลูกสูบ ø40.00 มม. และส่วนก้านส่งกำลังเพลาหลัก ø15.00 มม. พร้อมแต่งปลายสเตปเกลียวล็อกยึดขนาด ø6.00 มม.</p>
-                    </div>
-                </div>
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Rear Plate.JPG" alt="Rear End Cap Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg1_title">ฝาปิดท้าย (Rear End Cap)</h3>
-                        <p data-i18n="dwg1_desc">แบบแปลนแสดงมุมมองออร์โธกราฟิก (Orthographic Projections) ของฝาปิดท้ายกระบอกสูบ ขนาดสี่เหลี่ยมผืนผ้า 70x65 มม. หนา 10 มม. ระบุพิกัดความคลาดเคลื่อนและตำแหน่งเจาะรูสลักเกลียว Tie-rod ทั้ง 4 มุม</p>
-                    </div>
-                </div>
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Front Plate.JPG" alt="Front End Cap Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg2_title">ฝาปิดหน้า (Front End Cap)</h3>
-                        <p data-i18n="dwg2_desc">พิมพ์เขียวแสดงมุมมองตัดขวาง (Section Views) ของฝาปิดด้านหน้า เพิ่มรายละเอียดรูคว้านตรงกลางขนาดเส้นผ่านศูนย์กลาง ø12 มม. สำหรับรองรับการเคลื่อนที่ของแกนลูกสูบ พร้อมระบุตำแหน่งบ่าบดอัดติดตั้งซีลกันรั่ว</p>
-                    </div>
-                </div>
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Nut.JPG" alt="Nut Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg3_title">หัวน็อตหกเหลี่ยม (Hex Nut)</h3>
-                        <p data-i18n="dwg3_desc">รายละเอียดแบบขยาย มาตราส่วน (Detail Views) ของน็อตตัวเมียทรงหกเหลี่ยมขนาดเกลียวมาตรฐานสากล M10 แสดงขนาดมิติความกว้างด้านเท่า และความหนาเพื่อระบุความแข็งแรงเชิงกลในการขันล็อกประกอบแกนโครงสร้างกระบอกสูบ</p>
-                    </div>
-                </div>
-                <div class="drawing-card">
-                    <div class="drawing-image"><img src="./Shaft.JPG" alt="Tie Rod Drawing" onclick="window.open(this.src)"></div>
-                    <div class="drawing-info">
-                        <h3 data-i18n="dwg4_title">สลักเกลียวยึด (Tie Rod)</h3>
-                        <p data-i18n="dwg4_desc">แบบแสดงรายละเอียดชิ้นส่วนแนวยาวของแกนเหล็กยึดโครงสร้างกระบอกสูบ (Tie-rod) มีความยาวชิ้นงานรวม 177.30 มม. แสดงระยะเกลียวสตั๊ดที่ปลายทั้งสองข้างเพื่อขันยึดประกอบแผ่นฝาหน้าและฝาหลังเข้าด้วยกัน</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+    function convertToPythonSyntax(expr) {
+        let result = expr;
+        result = result.replace(/sin/g, "np.sin");
+        result = result.replace(/cos/g, "np.cos");
+        result = result.replace(/tan/g, "np.tan");
+        result = result.replace(/sqrt/g, "np.sqrt");
+        result = result.replace(/log/g, "np.log");
+        result = result.replace(/\^/g, "**"); // ยกกำลังใน Python
+        return result;
+    }
 
-        <section id="cylinder-selection" class="page-section hidden">
-            <h1 data-i18n="sec_selection">ประเภทและการเลือกใช้กระบอกสูบแบบนิวแมติก</h1>
-            <p data-i18n="selection_intro">การเลือกใช้ประเภทกระบอกสูบนิวเมติกส์และขนาดที่ถูกต้อง มีความสำคัญเป็นอย่างยิ่งต่อประสิทธิภาพ ความทนทาน และความปลอดภัยของระบบกลไกอัตโนมัติในงานวิศวกรรม</p>
-            
-            <h2 data-i18n="selection_criteria_title">📌 เกณฑ์สำคัญในการเลือกใช้งาน (Key Selection Criteria)</h2>
-            <ul>
-                <li><strong data-i18n="crit1">ระยะช่วงชัก (Stroke Length):</strong> <span data-i18n="crit1_d">ระยะทางที่ก้านสูบเคลื่อนที่เข้า-ออกจริงตามความต้องการของจลนศาสตร์ของเครื่องจักร</span></li>
-                <li><strong data-i18n="crit2">ขนาดเส้นผ่านศูนย์กลางกระบอกสูบ (Bore Size):</strong> <span data-i18n="crit2_d">ส่งผลโดยตรงต่อแรงผลัก (Push Force) และแรงดึง (Pull Force) ของกระบอกสูบตามหลักการกลศาสตร์ของไหล</span></li>
-                <li><strong data-i18n="crit3">แรงดันใช้งาน (Operating Pressure):</strong> <span data-i18n="crit3_d">ระดับความดันลมอัดของระบบ (ปกติคำนวณที่ความดันมาตรฐานของอุตสาหกรรมประมาณ 5 - 7 บาร์)</span></li>
-                <li><strong data-i18n="crit4">สภาพแวดล้อมและอุณหภูมิ (Environment & Temperature):</strong> <span data-i18n="crit4_d">สำหรับเลือกชนิดวัสดุโครงสร้างและชนิดของซีลกันรั่วให้เหมาะสม เช่น งานความร้อนสูงหรืองานด้านอาหาร (Food Grade)</span></li>
-            </ul>
+    function plotGraph() {
+        const equation = document.getElementById('equation-input').value;
+        const xValues = [];
+        const yValues = [];
 
-            <h2 data-i18n="selection_table_title">📊 ตารางเปรียบเทียบการเลือกใช้งานกระบอกสูบแต่ละประเภท</h2>
-            <div style="overflow-x: auto; width: 100%;">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th data-i18n="th_cyl_type">ประเภทกระบอกสูบ</th>
-                            <th data-i18n="th_cyl_force">ลักษณะแรง/การทำงาน</th>
-                            <th data-i18n="th_cyl_app">แอปพลิเคชันที่เหมาะสม</th>
-                            <th data-i18n="th_cyl_limit">ข้อจำกัด</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Single Acting Cylinder</strong></td>
-                            <td data-i18n="td1_1">กระทำด้วยลมทิศทางเดียว คืนตัวด้วยสปริง</td>
-                            <td data-i18n="td1_2">งานหนีบยึดชิ้นงานชั่วคราว, งานตัด, งานดันวัตถุขนาดเล็ก</td>
-                            <td data-i18n="td1_3">ระยะ Stroke สั้น (เนื่องจากข้อจำกัดความยาวสปริงภายใน)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Double Acting Cylinder</strong></td>
-                            <td data-i18n="td2_1">กระทำด้วยแรงดันลมทั้ง 2 ทิศทาง (เข้า-ออก)</td>
-                            <td data-i18n="td2_2">สายพานลำเลียง, แขนกลจับชิ้นงาน, อุตสาหกรรมยานยนต์ทั่วไป</td>
-                            <td data-i18n="td2_3">ใช้ปริมาณลมอัดมากกว่าแบบ Single Acting เท่าตัว</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Compact / Short Stroke</strong></td>
-                            <td data-i18n="td3_1">โครงสร้างสั้นและบาง แรงดันสูงในพื้นที่จำกัด</td>
-                            <td data-i18n="td3_2">อุตสาหกรรมอิเล็กทรอนิกส์, เครื่องจักรประกอบชิ้นส่วนขนาดเล็ก</td>
-                            <td data-i18n="td3_3">มีช่วงชักสั้นมาก ไม่เหมาะกับงานระยะยาว</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Rodless Cylinder</strong></td>
-                            <td data-i18n="td4_1">ขับเคลื่อนตลับเลื่อนภายนอกโดยไม่มีก้านสูบยื่น</td>
-                            <td data-i18n="td4_2">งานเปิด-ปิดประตูอัตโนมัติบานกว้าง, ระบบเลื่อนตัดวัสดุแนวยาว</td>
-                            <td data-i18n="td4_3">การป้องกันฝุ่นละอองเข้าสู่ร่องสไลด์ทำได้ยากกว่าปกติ</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        // ทำการเจนค่า X ตั้งแต่ -10 ถึง 10 ถี่ห่างช่องละ 0.5 เพื่อให้กราฟสมูท
+        for (let x = -10; x <= 10; x += 0.5) {
+            try {
+                // ใช้ math.js คำนวณหาค่า Y จากฟังก์ชันที่กรอกเข้ามา
+                let y = math.evaluate(equation, { x: x });
+                
+                // คัดกรองค่าที่เป็นจำนวนจริง (ไม่เอา NaN หรือตัวเลขสมมุติจินตภาพ)
+                if (typeof y === 'number' && isFinite(y)) {
+                    xValues.push(x.toFixed(1));
+                    yValues.push(y);
+                }
+            } catch (error) {
+                // ถ้าสมการผิดพลาดจะแสดง Error ในกล่อง Python ด้านล่าง
+                showPythonError();
+                return;
+            }
+        }
 
-        <section id="material-selection-principles" class="page-section hidden">
-            <h1 data-i18n="sec_mat_principles">หลักการเลือกใช้วัสดุสำหรับกระบอกสูบนิวแมติก</h1>
-            <p data-i18n="mat_principles_intro">ในการออกแบบทางวิศวกรรมวัสดุ (Engineering Materials) การเลือกใช้วัสดุมาผลิตชิ้นส่วนต่าง ๆ ของกระบอกสูบนิวแมติก จะต้องพิจารณาจากคุณสมบัติทางกล (Mechanical Properties), น้ำหนัก, ความทนทานต่อการกัดกร่อน และต้นทุนการผลิต เพื่อให้กระบอกสูบสามารถทำงานภายใต้สภาวะลมอัดได้อย่างมีประสิทธิภาพสูงสุด</p>
-            
-            <h2 data-i18n="mat_factors_title">🛠️ ปัจจัยหลักทางวิศวกรรมในการพิจารณาเลือกวัสดุ</h2>
-            <ul>
-                <li><strong data-i18n="factor1">ความแข็งแรงเชิงกล (Mechanical Strength):</strong> <span data-i18n="factor1_d">วัสดุต้องทนทานต่อความเค้นแรงดัน (Pressure Stress) ของลมอัดภายในกระบอกสูบ และทนแรงกระแทกซ้ำ ๆ ได้ดีโดยไม่เกิดการเปลี่ยนรูปถาวร</span></li>
-                <li><strong data-i18n="factor2">น้ำหนักและความหนาแน่น (Weight & Density):</strong> <span data-i18n="factor2_d">ชิ้นส่วนที่เคลื่อนที่ เช่น ก้านสูบและลูกสูบ ควรมีน้ำหนักเบาเพื่อลดความเฉื่อย (Inertia) ส่งผลให้ตอบสนองการเคลื่อนที่ได้อย่างรวดเร็วและประหยัดพลังงาน</span></li>
-                <li><strong data-i18n="factor3">ความต้านทานแรงเสียดทานและการสึกหรอ (Wear Resistance):</strong> <span data-i18n="factor3_d">ผิวด้านในกระบอกสูบ (Bore) ต้องมีความเรียบลื่นสูง และทนต่อแรงเสียดสีของซีลยาง NBR/PTFE ตลอดอายุการใช้งาน</span></li>
-                <li><strong data-i18n="factor4">ความทนทานต่อการกัดกร่อน (Corrosion Resistance):</strong> <span data-i18n="factor4_d">ในระบบนิวแมติกส์มักมีความชื้นสะสมปนมากับลมอัด วัสดุจึงต้องไม่เป็นสนิมง่ายเพื่อป้องกันความเสียหายต่อซีลกันรั่ว</span></li>
-            </ul>
+        // อัปเดตกราฟบนหน้าเว็บ
+        renderChart(xValues, yValues, equation);
+        // อัปเดตโค้ด Python
+        updatePythonScript(equation);
+    }
 
-            <h2 data-i18n="mat_case_study_title">📐 กรณีศึกษา: การเลือกใช้วัสดุในโปรเจกต์นี้ (Project Material Design Case)</h2>
-            <div style="overflow-x: auto; width: 100%;">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th data-i18n="th_p_part">ชิ้นส่วนโครงสร้าง</th>
-                            <th data-i18n="th_p_mat">วัสดุที่เลือกใช้</th>
-                            <th data-i18n="th_p_reason">เหตุผลสำคัญทางวิศวกรรม (Engineering Reasons)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>ตัวกระบอก (Cylinder Tube)</strong></td>
-                            <td>Aluminum 6063</td>
-                            <td data-i18n="td_p1">น้ำหนักเบามาก ช่วยลดภาระโครงสร้างโดยรวม, อลูมิเนียมเกรด 6063 มีคุณสมบัติในการรีดขึ้นรูปทรงกระบอกกลวงได้เรียบเนียน (Excellent Extrudability) และทนต่อการกัดกร่อนจากความชื้นในอากาศได้ดีเยี่ยม</td>
-                        </tr>
-                        <tr>
-                            <td><strong>แกนเพลาลูกสูบ (Piston Rod)</strong></td>
-                            <td>Chrome-Plated Steel</td>
-                            <td data-i18n="td_p2">เหล็กกล้าให้ค่าความเค้นดึง (Tensile Strength) สูงมาก รองรับแรงกดและแรงดัดงอขณะทำงานหนัก และการเคลือบผิวด้วยฮาร์ดโครม (Chrome-Plating) ช่วยเพิ่มความแข็งที่ผิว ลดแรงเสียดทาน และป้องกันรอยขีดข่วนจากการเคลื่อนที่ผ่านซีล</td>
-                        </tr>
-                        <tr>
-                            <td><strong>ฝาปิดหน้า-หลัง (End Caps)</strong></td>
-                            <td>Aluminum 6061-T6 / 6063</td>
-                            <td data-i18n="td_p3">ให้อัตราส่วนความแข็งแรงต่อน้ำหนักที่ดีเยี่ยม (Strength-to-Weight Ratio) สามารถแปรรูปขึ้นรูปด้วยเครื่องจักร (Machinability) เพื่อเจาะรูนำลม รูร้อยสลักยึด (Tie-rods) และทำบ่าซีลได้อย่างแม่นยำสูง</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+    function renderChart(xData, yData, label) {
+        const ctx = document.getElementById('graphCanvas').getContext('2d');
+        
+        // ถ้ามีกราฟเก่าอยู่ให้ทำลายทิ้งก่อน เพื่อวาดอันใหม่ทับ
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
 
-        <section id="boom" class="page-section hidden">
-            <h1 data-i18n="sec_boom">รายการวัสดุ</h1>
-            <p data-i18n="desc_boom">List of materials and components used to assemble the pneumatic cylinder.</p>
-            <div style="overflow-x: auto; width: 100%;">
-                <table class="data-table">
-                    <thead>
-                        <tr><th data-i18n="th_no">ลำดับ</th><th data-i18n="th_comp">ชิ้นส่วน</th><th data-i18n="th_mat">วัสดุ</th><th data-i18n="th_qty">จำนวน</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1</td><td>Barrel</td><td>Aluminum</td><td>1</td></tr>
-                        <tr><td>2</td><td>Piston</td><td>Steel</td><td>1</td></tr>
-                        <tr><td>3</td><td>Rod</td><td>Stainless</td><td>1</td></tr>
-                        <tr><td>4</td><td>End Cap</td><td>Aluminum</td><td>2</td></tr>
-                        <tr><td>5</td><td>Seals</td><td>NBR/PTFE</td><td>4</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section id="members" class="page-section hidden">
-            <h1 data-i18n="sec_mem">3. สมาชิกกลุ่ม</h1>
-            <div class="members-grid">
-                <div class="member-card">
-                    <div class="member-photo-container">
-                        <img id="photo-1" class="member-photo" src="./เจ.jpg" alt="Member Photo">
-                    </div>
-                    <h3 data-i18n="mem1_n">ธีรพัฒน์ กังนก</h3>
-                    <p><span data-i18n="mem1_r">Team Leader</span><br>ID: 2411220078</p>
-                </div>
-                <div class="member-card">
-                    <div class="member-photo-container">
-                        <img id="photo-2" class="member-photo" src="./โย.jpg" alt="Member Photo">
-                    </div>
-                    <h3 data-i18n="mem2_n">พีรพัฒน์ โพธิ์พูล</h3>
-                    <p>ID: 2411220342</p>
-                </div>
-                <div class="member-card">
-                    <div class="member-photo-container">
-                        <img id="photo-3" class="member-photo" src="./อั๋น.jpg" alt="Member Photo">
-                    </div>
-                    <h3 data-i18n="mem3_n">อนุลักษณ์ ศิริภักดี</h3>
-                    <p>ID: 2511220127</p>
-                </div>
-                <div class="member-card">
-                    <div class="member-photo-container">
-                        <img id="photo-4" class="member-photo" src="./เนะ.jpg" alt="Member Photo">
-                    </div>
-                    <h3 data-i18n="mem4_n">ศรัญญู ภูเขาใหญ่</h3>
-                    <p>ID: 2411220268</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="references" class="page-section hidden">
-            <h1 data-i18n="sec_ref">4. แหล่งอ้างอิง</h1>
-            <div class="ref-item">1. Festo Didactic. (2023). <em>Pneumatic Technology Basic Level.</em> Germany.</div>
-            <div class="ref-item">2. SMC Corporation. (2024). <em>Pneumatic Cylinder Catalog.</em> <a href="https://www.smcworld.com" target="_blank">smcworld.com</a></div>
-        </section>
-    </main>
-
-    <footer>
-        <p data-i18n="footer">© 2026 รายงานกระบอกสูบนิวเมติกส์ | กลุ่ม พอแล้ว พอแล้ว </p>
-    </footer>
-
-    <script>
-        // System Translation Engine (TH / EN)
-        const translations = {
-            th: {
-                nav_home: "หน้าหลัก", nav_intro: "บทนำ", nav_design: "พาร์ทดีไซน์", nav_members: "สมาชิกกลุ่ม", nav_ref: "แหล่งอ้างอิง",
-                drop_cat3d: "การแบบจำลองเชิงกล 3 มิติ", drop_cat2d: "การเขียนแบบเครื่องกล 2 มิติ", drop_selection: "ประเภทและการเลือกใช้งาน", drop_mat_principles: "หลักการเลือกใช้วัสดุ", drop_boom: "รายการวัสดุ",
-                hero_title: "PNEUMATICS PART PROJECT", hero_sub: "ENGINEERING MATERIALS",
-                sec_intro: "1. บทนำ", 
-                intro_why_choose: "เหตุผลในการเลือกใช้กระบอกสูบประเภทนี้", 
-                intro_why_choose_d: "สำหรับโปรเจกต์นี้ กลุ่มของเราได้เลือกพิจารณากระบอกสูบนิวเมติกส์ประเภท Double Acting (ทำงานสองทาง) เนื่องจากเป็นอุปกรณ์ขับเคลื่อนหลักที่ตอบโจทย์การใช้งานในอุตสาหกรรมระบบอัตโนมัติ โดยเฉพาะอย่างยิ่งการนำไปประยุกต์ใช้ในระบบสมาร์ทฟาร์ม (Smart Farm) และการเกษตรแม่นยำสูง ที่ต้องการกลไกการเปิด-ปิดวาล์วหรือคัดแยกผลผลิตที่ทนทานต่อสภาพแวดล้อม ทำงานได้อย่างรวดเร็ว และสามารถควบคุมระยะช่วงชักได้อย่างแม่นยำ",
-                intro_prin_title: "หลักการในการเลือกกระบอกสูบ",
-                intro_prin_desc: "ในการเลือกกระบอกสูบนิวเมติกส์ไปใช้งานเบื้องต้น จะต้องพิจารณาจากปัจจัยหลัก 4 ประการ ได้แก่ แรงที่ต้องการใช้งาน (Force) เพื่อคำนวณหาขนาดเส้นผ่านศูนย์กลางกระบอกสูบ, ระยะก้านชัก (Stroke) ให้สอดคล้องกับระยะการเคลื่อนที่ของเครื่องจักร, ความเร็ว (Speed) ที่ต้องการในวงจร, และ ความดันลมอัด (Operating Pressure) ในระบบ เพื่อให้กระบอกสูบทำงานได้อย่างมีประสิทธิภาพและปลอดภัย",
-                btn_rotate: "🔄 หยุดหมุน", btn_reset: "🎯 รีเซ็ตมุมมอง", volume_label: "🔊 ระดับเสียง:",
-                intro_types: "ประเภทของกระบอกสูบนิวเมติกส์",
-                type1: "Single Acting:", type1_d: "ใช้ลมดันออกทางเดียว และใช้สปริงช่วยในการดันลูกสูบคืนตัว",
-                type2: "Double Acting:", type2_d: "ใช้แรงดันลมในการขับเคลื่อนทั้งจังหวะออกและจังหวะเข้า (เป็นประเภทที่นิยมใช้งานมากที่สุด)",
-                type3: "Rodless Cylinder:", type3_d: "กระบอกสูบแบบไม่มีก้านสูบยื่นออกมาภายนอก ช่วยในการประหยัดพื้นที่ติดตั้ง",
-                type4: "Rotary Actuator:", type4_d: "อุปกรณ์ขับเคลื่อนที่ให้ส่งแรงออกมาในลักษณะของการเคลื่อนที่แบบหมุน",
-                intro_apps: "อุตสาหกรรมที่นำไปใช้งาน",
-                intro_apps_d: "ถูกนำไปใช้งานอย่างแพร่หลายในสายการผลิตอัตโนมัติ เช่น อุตสาหกรรมยานยนต์, บรรจุภัณฑ์, ชิ้นส่วนอิเล็กทรอนิกส์, อุตสาหกรรมอาหาร รวมถึงระบบจับยึดชิ้นงานต่าง ๆ",
-                sec_cat3d: "การแบบจำลองเชิงกล 3 มิติ", 
-                sec_cat2d: "2.3 การเขียนแบบเครื่องกล 2 มิติ (Engineering Drawing)", 
-                desc_cat2d: "การดึงแบบแปลน 2 มิติ (2D Drawing) จากโมเดล 3 มิติเพื่อใช้ในกระบวนการผลิต",
-                dwg_tube_title: "ตัวกระบอกสูบ (Cylinder Tube)",
-                dwg_tube_desc: "แบบแปลนแสดงโครงสร้างทรงกระบอกกลวง ความยาวรวม 260.00 มม. ระบุขนาดเส้นผ่านศูนย์กลางผิวนอก ø52.00 มม. และผิวด้านใน (Bore) ø40.00 มม. พร้อมตำแหน่งเจาะรูนำลมเข้า-ออกขนาด ø10.00 มม. ทั้งสองฝั่ง",
-                dwg_slider_title: "แกนเพลาลูกสูบ (Piston Slider Shaft)",
-                dwg_slider_desc: "แบบขยายโครงสร้างแกนเพลาขับเคลื่อนหลัก ความยาวรวม 269.00 มม. ขนาดฐานเพลารองรับลูกสูบ ø40.00 มม. และส่วนก้านส่งกำลังเพลาหลัก ø15.00 มม. พร้อมแต่งปลายสเตปเกลียวล็อกยึดขนาด ø6.00 มม.",
-                dwg1_title: "ฝาปิดท้าย (Rear End Cap)",
-                dwg1_desc: "แบบแปลนแสดงมุมมองออร์โธกราฟิก (Orthographic Projections) ของฝาปิดท้ายกระบอกสูบ ขนาดสี่เหลี่ยมผืนผ้า 70x65 มม. หนา 10 มม. ระบุพิกัดความคลาดเคลื่อนและตำแหน่งเจาะรูสลักเกลียว Tie-rod ทั้ง 4 มุม",
-                dwg2_title: "ฝาปิดหน้า (Front End Cap)",
-                dwg2_desc: "พิมพ์เขียวแสดงมุมมองตัดขวาง (Section Views) ของฝาปิดด้านหน้า เพิ่มรายละเอียดรูคว้านตรงกลางขนาดเส้นผ่านศูนย์กลาง ø12 มม. สำหรับรองรับการเคลื่อนที่ของแกนลูกสูบ พร้อมระบุตำแหน่งบ่าบดอัดติดตั้งซีลกันรั่ว",
-                dwg3_title: "หัวน็อตหกเหลี่ยม (Hex Nut)",
-                dwg3_desc: "รายละเอียดแบบขยาย มาตราส่วน (Detail Views) ของน็อตตัวเมียทรงหกเหลี่ยมขนาดเกลียวมาตรฐานสากล M10 แสดงขนาดมิติความกว้างด้านเท่า และความหนาเพื่อระบุความแข็งแรงเชิงกลในการขันล็อกประกอบแกนโครงสร้างกระบอกสูบ",
-                dwg4_title: "สลักเกลียวยึด (Tie Rod)",
-                dwg4_desc: "แบบแสดงรายละเอียดชิ้นส่วนแนวยาวของแกนเหล็กยึดโครงสร้างกระบอกสูบ (Tie-rod) มีความยาวชิ้นงานรวม 177.30 มม. แสดงระยะเกลียวสตั๊ดที่ปลายทั้งสองข้างเพื่อขันยึดประกอบแผ่นฝาหน้าและฝาหลังเข้าด้วยกัน",
-                sec_selection: "ประเภทและการเลือกใช้กระบอกสูบแบบนิวแมติก",
-                selection_intro: "การเลือกใช้ประเภทกระบอกสูบนิวเมติกส์และขนาดที่ถูกต้อง มีความสำคัญเป็นอย่างยิ่งต่อประสิทธิภาพ ความทนทาน และความปลอดภัยของระบบกลไกอัตโนมัติในงานวิศวกรรม",
-                selection_criteria_title: "📌 เกณฑ์สำคัญในการเลือกใช้งาน (Key Selection Criteria)",
-                crit1: "ระยะช่วงชัก (Stroke Length):", crit1_d: "ระยะทางที่ก้านสูบเคลื่อนที่เข้า-ออกจริงตามความต้องการของจลนศาสตร์ของเครื่องจักร",
-                crit2: "ขนาดเส้นผ่านศูนย์กลางกระบอกสูบ (Bore Size):", crit2_d: "ส่งผลโดยตรงต่อแรงผลัก (Push Force) และแรงดึง (Pull Force) ของกระบอกสูบตามหลักการกลศาสตร์ของไหล",
-                crit3: "แรงดันใช้งาน (Operating Pressure):", crit3_d: "ระดับความดันลมอัดของระบบ (ปกติคำนวณที่ความดันมาตรฐานของอุตสาหกรรมประมาณ 5 - 7 บาร์)",
-                crit4: "สภาพแวดล้อมและอุณหภูมิ (Environment & Temperature):", crit4_d: "สำหรับเลือกชนิดวัสดุโครงสร้างและชนิดของซีลกันรั่วให้เหมาะสม เช่น งานความร้อนสูงหรืองานด้านอาหาร (Food Grade)",
-                selection_table_title: "📊 ตารางเปรียบเทียบการเลือกใช้งานกระบอกสูบแต่ละประเภท",
-                th_cyl_type: "ประเภทกระบอกสูบ", th_cyl_force: "ลักษณะแรง/การทำงาน", th_cyl_app: "แอปพลิเคชันที่เหมาะสม", th_cyl_limit: "ข้อจำกัด",
-                td1_1: "กระทำด้วยลมทิศทางเดียว คืนตัวด้วยสปริง", td1_2: "งานหนีบยึดชิ้นงานชั่วคราว, งานตัด, งานดันวัตถุขนาดเล็ก", td1_3: "ระยะ Stroke สั้น (เนื่องจากข้อจำกัดความยาวสปริงภายใน)",
-                td2_1: "กระทำด้วยแรงดันลมทั้ง 2 ทิศทาง (เข้า-ออก)", td2_2: "สายพานลำเลียง, แขนกลจับชิ้นงาน, อุตสาหกรรมยานยนต์ทั่วไป", td2_3: "ใช้ปริมาณลมอัดมากกว่าแบบ Single Acting เท่าตัว",
-                td3_1: "โครงสร้างสั้นและบาง แรงดันสูงในพื้นที่จำกัด", td3_2: "อุตสาหกรรมอิเล็กทรอนิกส์, เครื่องจักรประกอบชิ้นส่วนขนาดเล็ก", td3_3: "มีช่วงชักสั้นมาก ไม่เหมาะกับงานระยะยาว",
-                td4_1: "ขับเคลื่อนตลับเลื่อนภายนอกโดยไม่มีก้านสูบยื่น", td4_2: "งานเปิด-ปิดประตูอัตโนมัติบานกว้าง, ระบบเลื่อนตัดวัสดุแนวยาว", td4_3: "การป้องกันฝุ่นละอองเข้าสู่ร่องสไลด์ทำได้ยากกว่าปกติ",
-                sec_mat_principles: "หลักการเลือกใช้วัสดุสำหรับกระบอกสูบนิวแมติก",
-                mat_principles_intro: "ในการออกแบบทางวิศวกรรมวัสดุ (Engineering Materials) การเลือกใช้วัสดุมาผลิตชิ้นส่วนต่าง ๆ ของกระบอกสูบนิวแมติก จะต้องพิจารณาจากคุณสมบัติทางกล (Mechanical Properties), น้ำหนัก, ความทนทานต่อการกัดกร่อน และต้นทุนการผลิต เพื่อให้กระบอกสูบสามารถทำงานภายใต้สภาวะลมอัดได้อย่างมีประสิทธิภาพสูงสุด",
-                mat_factors_title: "🛠️ ปัจจัยหลักทางวิศวกรรมในการพิจารณาเลือกวัสดุ",
-                factor1: "ความแข็งแรงเชิงกล (Mechanical Strength):", factor1_d: "วัสดุต้องทนทานต่อความเค้นแรงดัน (Pressure Stress) ของลมอัดภายในกระบอกสูบ และทนแรงกระแทกซ้ำ ๆ ได้ดีโดยไม่เกิดการเปลี่ยนรูปถาวร",
-                factor2: "น้ำหนักและความหนาแน่น (Weight & Density):", factor2_d: "ชิ้นส่วนที่เคลื่อนที่ เช่น ก้านสูบและลูกสูบ ควรมีน้ำหนักเบาเพื่อลดความเฉื่อย (Inertia) ส่งผลให้ตอบสนองการเคลื่อนที่ได้อย่างรวดเร็วและประหยัดพลังงาน",
-                factor3: "ความต้านทานแรงเสียดทานและการสึกหรอ (Wear Resistance):", factor3_d: "ผิวด้านในกระบอกสูบ (Bore) ต้องมีความเรียบลื่นสูง และทนต่อแรงเสียดสีของซีลยาง NBR/PTFE ตลอดอายุการใช้งาน",
-                factor4: "ความทนทานต่อการกัดกร่อน (Corrosion Resistance):", factor4_d: "ในระบบนิวแมติกส์มักมีความชื้นสะสมปนมากับลมอัด วัสดุจึงต้องไม่เป็นสนิมง่ายเพื่อป้องกันความเสียหายต่อซีลกันรั่ว",
-                mat_case_study_title: "📐 กรณีศึกษา: การเลือกใช้วัสดุในโปรเจกต์นี้ (Project Material Design Case)",
-                th_p_part: "ชิ้นส่วนโครงสร้าง", th_p_mat: "วัสดุที่เลือกใช้", th_p_reason: "เหตุผลสำคัญทางวิศวกรรม (Engineering Reasons)",
-                td_p1: "น้ำหนักเบามาก ช่วยลดภาระโครงสร้างโดยรวม, อลูมิเนียมเกรด 6063 มีคุณสมบัติในการรีดขึ้นรูปทรงกระบอกกลวงได้เรียบเนียน (Excellent Extrudability) และทนต่อการกัดกร่อนจากความชื้นในอากาศได้ดีเยี่ยม",
-                td_p2: "เหล็กกล้าให้ค่าความเค้นดึง (Tensile Strength) สูงมาก รองรับแรงกดและแรงดัดงอขณะทำงานหนัก และการเคลือบผิวด้วยฮาร์ดโครม (Chrome-Plating) ช่วยเพิ่มความแข็งที่ผิว ลดแรงเสียดทาน และป้องกันรอยขีดข่วนจากการเคลื่อนที่ผ่านซีล",
-                td_p3: "ให้อัตราส่วนความแข็งแรงต่อน้ำหนักที่ดีเยี่ยม (Strength-to-Weight Ratio) สามารถแปรรูปขึ้นรูปด้วยเครื่องจักร (Machinability) เพื่อเจาะรูนำลม รูร้อยสลักยึด (Tie-rods) และทำบ่าซีลได้อย่างแม่นยำสูง",
-                sec_boom: "รายการวัสดุ", desc_boom: "รายการวัสดุและชิ้นส่วนทั้งหมดที่ใช้ในการประกอบกระบอกสูบนิวเมติกส์",
-                th_no: "ลำดับ", th_comp: "ชิ้นส่วน", th_mat: "วัสดุ", th_qty: "จำนวน",
-                sec_mem: "3. สมาชิกกลุ่ม", mem1_n: "ธีรพัฒน์ กังนก", mem1_r: "หัวหน้ากลุ่ม", mem2_n: "พีรพัฒน์ โพธิ์พูล", mem3_n: "อนุลักษณ์ ศิริภักดี", mem4_n: "ศรัญญู ภูเขาใหญ่",
-                sec_ref: "4. แหล่งอ้างอิง", footer: "© 2026 รายงานกระบอกสูบนิวเมติกส์ | กลุ่มพอแล้ว พอแล้ว"
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xData,
+                datasets: [{
+                    label: `f(x) = ${label}`,
+                    data: yData,
+                    borderColor: '#4B8BBE',
+                    borderWidth: 2.5,
+                    pointRadius: 0, // ไม่แสดงจุดตุ่มๆ เพื่อให้ได้เส้นกราฟที่คลีนแบบวิทยาศาสตร์
+                    fill: false
+                }]
             },
-            en: {
-                nav_home: "Home", nav_intro: "Introduction", nav_design: "Part Design", nav_members: "Team Members", nav_ref: "References",
-                drop_cat3d: "3D Mechanical Modeling", drop_cat2d: "2D Mechanical Drafting", drop_selection: "Cylinder Selection", drop_mat_principles: "Material Principles", drop_boom: "BOM",
-                hero_title: "PNEUMATICS PART PROJECT", hero_sub: "ENGINEERING MATERIALS",
-                sec_intro: "1. Introduction", 
-                intro_why_choose: "Rationale for Cylinder Selection", 
-                intro_why_choose_d: "For this project, our group selected the Double Acting pneumatic cylinder. This actuator perfectly meets the demands of modern automation industries, particularly in Smart Farm applications and precision agriculture.",
-                intro_prin_title: "Principles of Cylinder Selection",
-                intro_prin_desc: "The basic selection of a pneumatic cylinder depends on four main factors: Required Force, Stroke Length, Operating Speed, and System Operating Pressure.",
-                btn_rotate: "🔄 Auto Rotate", btn_reset: "🎯 Reset View", volume_label: "🔊 Volume:",
-                intro_types: "Types of Pneumatic Cylinders",
-                type1: "Single Acting:", type1_d: "Uses air pressure for one direction, spring returns it.",
-                type2: "Double Acting:", type2_d: "Uses air for both extension and retraction.",
-                type3: "Rodless Cylinder:", type3_d: "No piston rod extends out, saves space.",
-                type4: "Rotary Actuator:", type4_d: "Provides rotational motion.",
-                intro_apps: "Applicable Industries", intro_apps_d: "Widely used in automated production lines such as automotive, packaging, electronics, food industry, and workpiece clamping systems.",
-                sec_cat3d: "3D Mechanical Modeling", 
-                sec_cat2d: "2D Mechanical Drafting", desc_cat2d: "Extracting 2D drawings from 3D models for manufacturing.",
-                dwg_tube_title: "Cylinder Tube",
-                dwg_tube_desc: "Blueprint displaying hollow internal channel structure with a total length of 260.00 mm, ø52.00 mm outer diameter, ø40.00 mm internal bore, and dual ø10.00 mm air ports.",
-                dwg_slider_title: "Piston Slider Shaft",
-                dwg_slider_desc: "Scale blueprint of the main driving shaft with a total length of 269.00 mm, a ø40.00 mm piston base, a ø15.00 mm main shaft rod.",
-                dwg1_title: "Rear End Cap",
-                dwg1_desc: "Orthographic projection layout of the rear cap specifying tolerances and positions for the four tie-rod alignment holes.",
-                dwg2_title: "Front End Cap",
-                dwg2_desc: "Section blueprint illustrating internal channel geometry with a central ø12 mm bore for the piston rod.",
-                dwg3_title: "Hex Nut",
-                dwg3_desc: "Detailed scale layout of the standardized M10 industrial female hex bolt.",
-                dwg4_title: "Tie Rod",
-                dwg4_desc: "Dimensional blueprint of the elongated pneumatic cylinder tie-rod tension bar with an overall manufacturing length of 177.30 mm.",
-                sec_selection: "Pneumatic Cylinder Types & Selection",
-                selection_intro: "Selecting the correct pneumatic cylinder type and size is vital for the efficiency, durability, and safety of automation systems.",
-                selection_criteria_title: "📌 Key Selection Criteria",
-                crit1: "Stroke Length:", crit1_d: "The linear distance the piston rod travels according to kinematic needs.",
-                crit2: "Bore Size:", crit2_d: "Directly determines the push and pull forces based on fluid mechanics principles.",
-                crit3: "Operating Pressure:", crit3_d: "System compressed air pressure (usually calculated at an industry standard of 5-7 bar).",
-                crit4: "Environment & Temperature:", crit4_d: "Crucial for choosing the right seals and materials.",
-                selection_table_title: "📊 Comparison Table for Cylinder Selection",
-                th_cyl_type: "Cylinder Type", th_cyl_force: "Force / Action Feature", th_cyl_app: "Suitable Application", th_cyl_limit: "Limitations",
-                td1_1: "Single direction by air, return by internal spring", td1_2: "Clamping, cutting, ejecting lightweight parts", td1_3: "Limited stroke length due to internal spring compression",
-                td2_1: "Pushed by air pressure in both directions", td2_2: "Conveyors, robotic arms, general automotive automation", td2_3: "Consumes twice as much compressed air as single acting",
-                td3_1: "Compact, thin body structure for high force in narrow areas", td3_2: "Electronics industry, small part assembly machinery", td3_3: "Very short stroke lengths, not suitable for long-reach work",
-                td4_1: "Drives external carriage directly without an extending rod", td4_2: "Automatic wide doors, long-stroke material cutting systems", td4_3: "Harder to prevent fine dust from entering the slide slot",
-                sec_mat_principles: "Material Selection Principles",
-                mat_principles_intro: "In materials engineering design, selecting proper substrates for components must balance mechanical properties, weight, wear resistance, and cost.",
-                mat_factors_title: "🛠️ Key Engineering Evaluation Factors",
-                factor1: "Mechanical Strength:", factor1_d: "Materials must withstand internal pressure stress and cyclic kinetic impacts.",
-                factor2: "Weight & Density:", factor2_d: "Reciprocating elements require low density to minimize inertia.",
-                factor3: "Wear Resistance:", factor3_d: "The inner sliding bore must retain low absolute surface roughness.",
-                factor4: "Corrosion Resistance:", factor4_d: "Alloys must resist localized oxidative degradation.",
-                mat_case_study_title: "📐 Case Study: Project Material Configuration",
-                th_p_part: "Structural Component", th_p_mat: "Selected Material Substrate", th_p_reason: "Engineering Logic & Operational Reasons",
-                td_p1: "Highly lightweight profile minimizing overall structure load. Aluminum 6063 provides excellent extrusion consistency.",
-                td_p2: "Carbon steel yields remarkable structural tensile strength. Industrial chrome-plating introduces exceptional hard case depth.",
-                td_p3: "Delivers a commendable strength-to-weight ratio. Highly favorable machinability characteristics.",
-                sec_boom: "Bill of Materials", desc_boom: "List of materials and components used.",
-                th_no: "No.", th_comp: "Component", th_mat: "Material", th_qty: "Qty",
-                sec_mem: "3. Team Members", mem1_n: "Teerapat Kangnoke", mem1_r: "Team Leader", mem2_n: "Peerapat Pokpool", mem3_n: "Anuluk Siriphagdee", mem4_n: "Saranyu Phukhaoyai",
-                sec_ref: "4. References", footer: "© 2026 Pneumatic Cylinder Report | Por laew por laew Group"
-            }
-        };
-
-        let currentLang = localStorage.getItem('lang') || 'th';
-        let currentTheme = localStorage.getItem('theme') || 'light';
-
-        // Dark/Light Theme Handler
-        function initTheme() {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-            document.getElementById('theme-toggle').textContent = currentTheme === 'light' ? '🌙' : '☀️';
-        }
-
-        function toggleTheme() {
-            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-            localStorage.setItem('theme', currentTheme);
-            initTheme();
-        }
-
-        function toggleLang() {
-            currentLang = currentLang === 'th' ? 'en' : 'th';
-            localStorage.setItem('lang', currentLang);
-            updateText();
-        }
-
-        function updateText() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[currentLang] && translations[currentLang][key]) {
-                    el.textContent = translations[currentLang][key];
+            options: {
+                responsive: true,
+                scales: {
+                    x: { grid: { color: '#e0e0e0' } },
+                    y: { grid: { color: '#e0e0e0' } }
                 }
-            });
-            document.documentElement.lang = currentLang;
-            document.getElementById('lang-toggle').textContent = currentLang === 'th' ? 'EN' : 'TH';
-            syncRotateButton();
-        }
-
-        // Mobile Responsive Navigation Menu
-        function toggleMobileMenu() { 
-            document.getElementById('navMenu').classList.toggle('active'); 
-            document.querySelector('.hamburger').classList.toggle('active'); 
-        }
-        function closeMobileMenu() { 
-            document.getElementById('navMenu').classList.remove('active'); 
-            document.querySelector('.hamburger').classList.remove('active'); 
-            document.getElementById('design-dropdown').classList.remove('open');
-        }
-        function toggleDropdownMenu(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            document.getElementById('design-dropdown').classList.toggle('open');
-        }
-
-        // Section Router UI
-        function showSection(sectionId) {
-            if (sectionId === 'design3d') sectionId = 'cat3d';
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.add('hidden'));
-            const target = document.getElementById(sectionId); 
-            if (target) target.classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-menu > li > a').forEach(a => a.classList.remove('active'));
-            const navLink = document.getElementById('nav-' + sectionId); 
-            if (navLink) navLink.classList.add('active');
-            document.getElementById('design-dropdown').classList.remove('open');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        window.addEventListener('click', (e) => { 
-            if (!e.target.closest('.dropdown')) document.getElementById('design-dropdown').classList.remove('open'); 
-            if (!e.target.closest('nav')) closeMobileMenu(); 
-        });
-
-        // 3D Model Rotation & Audio Logic
-        let isAutoRotating = false; let rotateAnimFrame = null; let currentRotation = 0;
-        function startSmoothRotation() {
-            if (rotateAnimFrame) cancelAnimationFrame(rotateAnimFrame);
-            function animate() {
-                if (isAutoRotating) {
-                    currentRotation += 1.5;
-                    const viewer = document.getElementById('glb-viewer');
-                    if (viewer) viewer.cameraOrbit = `${currentRotation}deg auto auto`;
-                }
-                rotateAnimFrame = requestAnimationFrame(animate);
             }
-            animate();
-            const audio = document.getElementById('background-music');
-            if (audio && isAutoRotating) audio.play().catch(()=>{});
-        }
-        function stopSmoothRotation() {
-            if (rotateAnimFrame) cancelAnimationFrame(rotateAnimFrame);
-            rotateAnimFrame = null;
-            const audio = document.getElementById('background-music');
-            if (audio) audio.pause();
-        }
-        function toggleAutoRotate() {
-            isAutoRotating = !isAutoRotating;
-            syncRotateButton();
-            if (isAutoRotating) startSmoothRotation(); else stopSmoothRotation();
-        }
-        function syncRotateButton() {
-            const btn = document.getElementById('btn-rotate'); if (!btn) return;
-            btn.textContent = isAutoRotating ? translations[currentLang].btn_rotate : (currentLang === 'th' ? '🔄 หมุนอัตโนมัติ' : '🔄 Auto Rotate');
-        }
-        function resetCamera() { const viewer = document.getElementById('glb-viewer'); currentRotation = 0; if (viewer) viewer.cameraOrbit = '0deg auto auto'; }
-        function updateVolume(val) { const audio = document.getElementById('background-music'); const numVal = parseInt(val, 10); if (audio) audio.volume = numVal / 100; document.getElementById('volume-txt-label').textContent = `${numVal}%`; }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initTheme();
-            updateText();
-            isAutoRotating = true;
-            syncRotateButton();
-            startSmoothRotation();
         });
-    </script>
+    }
+
+    function updatePythonScript(expr) {
+        let pyExpr = convertToPythonSyntax(expr);
+        document.getElementById("pyCode").innerHTML = `
+<span class="comment"># Python Data Science Script to replicate this plot</span>
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+
+<span class="comment"># กำหนดช่วงค่า X จาก -10 ถึง 10 (สร้างจุด 400 จุดให้เส้นกราฟเนียน)</span>
+x = np.linspace(-10, 10, 400)
+
+<span class="comment"># ฟังก์ชันสมการคณิตศาสตร์</span>
+y = ${pyExpr}
+
+<span class="comment"># สั่งสร้างกราฟด้วย Matplotlib</span>
+plt.plot(x, y, label=<span class="builtin">"f(x) = ${expr}"</span>, color=<span class="builtin">'#4B8BBE'</span>)
+plt.title(<span class="builtin">"Scientific Graphing Calculator"</span>)
+plt.xlabel(<span class="builtin">"X Axis"</span>)
+plt.ylabel(<span class="builtin">"Y Axis"</span>)
+plt.grid(<span class="keyword">True</span>)
+plt.legend()
+
+<span class="comment"># แสดงผลกราฟหน้าต่างป็อปอัป</span>
+plt.show()
+        `.trim();
+    }
+
+    function showPythonError() {
+        document.getElementById("pyCode").innerHTML = `
+<span class="comment"># Python Traceback (Invalid Equation)</span>
+<span class="keyword">import</span> sys
+<span class="builtin">print</span>(<span class="builtin">"SyntaxError: รูปแบบสมการไม่ถูกต้อง กรุณาตรวจสอบวงเล็บ หรือเครื่องหมายคูณ เช่น 2*x"</span>)
+        `.trim();
+    }
+</script>
+
 </body>
 </html>
